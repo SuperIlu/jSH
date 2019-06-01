@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "file.h": "c"
+    },
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": false,
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, ColumnLimit: 180, IndentWidth: 4 }",
+}

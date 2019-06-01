@@ -1,0 +1,10 @@
+stdout.txt
+stderr.txt
+*.EXE
+.vscode/ipch/*
+build/*
+nssi/*
+*.FIL
+JSLOG.txt
+sys-include/*
+*.zip

@@ -1,0 +1,16 @@
+{
+	"source": {
+		"include": [
+			"internal.js",
+			"objects.js",
+			"classes.js",
+			"conio.js",
+			"../jsboot/func.js",
+			"../jsboot/file.js"
+		],
+		"excludePattern": ""
+	},
+	"opts": {
+		"template": "/usr/local/lib/node_modules/tui-jsdoc-template"
+	}
+}
