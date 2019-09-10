@@ -31,14 +31,14 @@ Println("All done...");
 ```
 And can be run like this: `JSH.EXE RENALL.JS SOMEDIR .FOO .BAR` to rename all files ending in `.FOO` to `.BAR`.
 
-DOjS was only possible due to the work of these people/projects:
+jSH was only possible due to the work of these people/projects:
 * [MuJS](https://mujs.com/) JavaScript interpreter
 * [DJGPP](http://www.delorie.com/djgpp/) from DJ Delorie and the [Linux compile scripts](https://github.com/andrewwutw/build-djgpp) by Andrew Wu.
 
 You can find me on [Twitter](https://twitter.com/dec_hl) if you want...
 
 # Download and quick start
-You can find binary releases on the [GitHub release page](https://github.com/SuperIlu/jSH/releases). Just extract the contents of the archive and run jSH.
+**You can find binary releases on the [GitHub release page](https://github.com/SuperIlu/jSH/releases). Just extract the contents of the archive and run jSH.**
 
 jSH runs in [Dosbox](https://www.dosbox.com/) and on real hardware or a virtual machine with MS-DOS, [FreeDOS](https://www.freedos.org/) or any DOS based Windows like Windows 95/98/ME.
 
