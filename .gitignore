@@ -8,3 +8,6 @@ nssi/*
 JSLOG.txt
 sys-include/*
 *.zip
+duktape-2.5.0/djgpp/
+*.pyc
+*.o

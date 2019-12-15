@@ -23,17 +23,12 @@ SOFTWARE.
 #ifndef __CONIO_H__
 #define __CONIO_H__
 
-#include <mujs.h>
+#include <duktape.h>
 #include "jSH.h"
-
-/************
-** defines **
-************/
-//#define JSINC_FUNC BOOT_DIR "func.js"  //!< boot script for grx subsystem
 
 /***********************
 ** exported functions **
 ***********************/
-extern void init_conio(js_State *J);
+extern void init_conio(duk_context *J);
 
-#endif // __CONIO_H__
+#endif  // __CONIO_H__

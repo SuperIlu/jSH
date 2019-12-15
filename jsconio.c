@@ -25,101 +25,150 @@ SOFTWARE.
 
 #include "jsconio.h"
 
-static void f_SetCursorType(js_State *J) {
-    int ct = js_toint16(J, 1);
+static duk_ret_t f_SetCursorType(duk_context *J) {
+    int ct = duk_require_int(J, 0);
     if (ct != _NOCURSOR && ct != _SOLIDCURSOR && ct != _NORMALCURSOR) {
-        js_error(J, "Invalid cursor type");
+        return duk_generic_error(J, "Invalid cursor type");
     }
     _setcursortype(ct);
+    return 0;
 }
 
-static void f_GotoXY(js_State *J) {
-    // if (js_isnumber(J, 1) || js_isnumber(J, 2)) {
-    //     js_error(J, "Two numbers expected");
-    // }
-
-    gotoxy(js_toint16(J, 1), js_toint16(J, 2));
+static duk_ret_t f_GotoXY(duk_context *J) {
+    gotoxy(duk_require_int(J, 0), duk_require_int(J, 1));
+    return 0;
 }
 
-static void f_LowVideo(js_State *J) { lowvideo(); }
-static void f_HighVideo(js_State *J) { highvideo(); }
+static duk_ret_t f_LowVideo(duk_context *J) {
+    lowvideo();
+    return 0;
+}
+static duk_ret_t f_HighVideo(duk_context *J) {
+    highvideo();
+    return 0;
+}
 
-static void f_ScreenVisualBell(js_State *J) { ScreenVisualBell(); }
+static duk_ret_t f_ScreenVisualBell(duk_context *J) {
+    ScreenVisualBell();
+    return 0;
+}
 
-static void f_ScreenCols(js_State *J) { js_pushnumber(J, ScreenCols()); }
-static void f_ScreenRows(js_State *J) { js_pushnumber(J, ScreenRows()); }
+static duk_ret_t f_ScreenCols(duk_context *J) {
+    duk_push_int(J, ScreenCols());
+    return 1;
+}
+static duk_ret_t f_ScreenRows(duk_context *J) {
+    duk_push_int(J, ScreenRows());
+    return 1;
+}
 
-static void f_WhereX(js_State *J) { js_pushnumber(J, wherex()); }
-static void f_WhereY(js_State *J) { js_pushnumber(J, wherey()); }
+static duk_ret_t f_WhereX(duk_context *J) {
+    duk_push_int(J, wherex());
+    return 1;
+}
+static duk_ret_t f_WhereY(duk_context *J) {
+    duk_push_int(J, wherey());
+    return 1;
+}
 
-static void f_TextMode(js_State *J) {
-    int tm = js_toint16(J, 1);
+static duk_ret_t f_TextMode(duk_context *J) {
+    int tm = duk_require_int(J, 0);
     if (tm != LASTMODE && tm != BW40 && tm != C40 && tm != BW80 && tm != C80 && tm != C4350 && tm != MONO) {
-        js_error(J, "Invalid text mode");
+        return duk_generic_error(J, "Invalid text mode");
     }
     textmode(tm);
+    return 0;
 }
 
-static void f_TextColor(js_State *J) {
-    int c = js_toint16(J, 1);
+static duk_ret_t f_TextColor(duk_context *J) {
+    int c = duk_require_int(J, 0);
     textcolor(c);
+    return 0;
 }
-static void f_TextBackground(js_State *J) {
-    int c = js_toint16(J, 1);
+static duk_ret_t f_TextBackground(duk_context *J) {
+    int c = duk_require_int(J, 0);
     textbackground(c);
+    return 0;
 }
 
-static void f_ClearEol(js_State *J) { clreol(); }
-static void f_ClearScreen(js_State *J) { clrscr(); }
-static void f_DeleteLine(js_State *J) { delline(); }
-static void f_InsertLine(js_State *J) { insline(); }
+static duk_ret_t f_ClearEol(duk_context *J) {
+    clreol();
+    return 0;
+}
+static duk_ret_t f_ClearScreen(duk_context *J) {
+    clrscr();
+    return 0;
+}
+static duk_ret_t f_DeleteLine(duk_context *J) {
+    delline();
+    return 0;
+}
+static duk_ret_t f_InsertLine(duk_context *J) {
+    insline();
+    return 0;
+}
 
-static void f_CGets(js_State *J) {
+static duk_ret_t f_CGets(duk_context *J) {
     char buff[260];
     buff[0] = 255;
     char *str = cgets(buff);
     str[(unsigned int)buff[1]] = 0;
-    js_pushstring(J, str);
+    duk_push_string(J, str);
+    return 1;
 }
 
-static void f_CPuts(js_State *J) { cputs(js_tostring(J, 1)); }
+static duk_ret_t f_CPuts(duk_context *J) {
+    cputs(duk_require_string(J, 0));
+    return 0;
+}
 
-static void f_GetCh(js_State *J) {
+static duk_ret_t f_GetCh(duk_context *J) {
     char buff[2];
     buff[0] = getch();
     buff[1] = 0;
 
-    js_pushstring(J, buff);
+    duk_push_string(J, buff);
+    return 1;
 }
 
-static void f_GetChE(js_State *J) {
+static duk_ret_t f_GetChE(duk_context *J) {
     char buff[2];
     buff[0] = getche();
     buff[1] = 0;
 
-    js_pushstring(J, buff);
+    duk_push_string(J, buff);
+    return 1;
 }
 
-static void f_UngetCh(js_State *J) {
-    char *ch = js_tostring(J, 1);
+static duk_ret_t f_UngetCh(duk_context *J) {
+    const char *ch = duk_require_string(J, 0);
     ungetch(ch[0]);
+    return 0;
 }
 
-static void f_PutCh(js_State *J) {
-    char *ch = js_tostring(J, 1);
+static duk_ret_t f_PutCh(duk_context *J) {
+    const char *ch = duk_require_string(J, 0);
     putch(ch[0]);
+    return 0;
 }
 
-static void f_AsciiCharDef(js_State *J) {
+static duk_ret_t f_AsciiCharDef(duk_context *J) {
     char buff[2];
-    buff[0] = js_toint16(J, 1);
+    buff[0] = duk_require_int(J, 0);
     buff[1] = 0;
-    js_pushstring(J, buff);
+    duk_push_string(J, buff);
+    return 1;
 }
 
-static void f_EnableScrolling(js_State *J) { _wscroll = js_toboolean(J, 1); }
+static duk_ret_t f_EnableScrolling(duk_context *J) {
+    _wscroll = duk_require_boolean(J, 0);
+    return 0;
+}
 
-static void f_GetXKey(js_State *J) { js_pushnumber(J, getxkey()); }
+static duk_ret_t f_GetXKey(duk_context *J) {
+    duk_push_int(J, getxkey());
+    return 1;
+}
 
 /***********************
 ** exported functions **
@@ -129,7 +178,7 @@ static void f_GetXKey(js_State *J) { js_pushnumber(J, getxkey()); }
  *
  * @param J VM state.
  */
-void init_conio(js_State *J) {
+void init_conio(duk_context *J) {
     // colors
     PROPDEF_N(J, BLACK, "BLACK");
     PROPDEF_N(J, BLUE, "BLUE");

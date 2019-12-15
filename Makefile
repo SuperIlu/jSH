@@ -6,14 +6,16 @@
 #DJGPP=/Users/iluvatar/tmp/djgpp/bin
 DJGPP=/home/ilu/djgpp/bin
 
-MUJS=mujs
+DUKTAPE=duktape-2.5.0
+DUKOUT=$(DUKTAPE)/djgpp
+DUKSRC=$(DUKOUT)/duktape.c
+DUKOBJ=$(DUKOUT)/duktape.o
 
-INCLUDES=-I$(MUJS)
-LIBS=-lmujs -lm -lemu
+CFLAGS=-MMD -Wall -O2 -march=i386 -mtune=i586 -fgnu89-inline -O2 #-DDEBUG_ENABLED 
+#CFLAGS=-MMD -Wall -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED -std=c99 
+CFLAGS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I$(DUKTAPE)/extras/print-alert -I$(DUKOUT)
 
-CFLAGS=-MMD -Wall -O2 -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED
-#CFLAGS=-MMD -Wall -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED
-LDFLAGS=-L$(MUJS)/build/release
+LIBS=-lm -lemu
 
 EXE=JSH.EXE
 ZIP=JSH.ZIP
@@ -32,17 +34,25 @@ RANLIB=$(DJGPP)/$(CROSS_PLATFORM)ranlib
 export
 
 PARTS= \
+	$(DUKOBJ) \
+	$(DUKTAPE)/extras/print-alert/duk_print_alert.o \
 	$(BUILDDIR)/file.o \
 	$(BUILDDIR)/funcs.o \
 	$(BUILDDIR)/jsconio.o \
 	$(BUILDDIR)/jSH.o
 
-all: init libmujs $(EXE)
+all: init $(EXE)
 
-libmujs: $(MUJS)/build/release/libmujs.a
+duktape: $(DUKOBJ)
 
-$(MUJS)/build/release/libmujs.a:
-	$(MAKE) -C $(MUJS) build/release/libmujs.a
+$(DUKSRC):
+	$(DUKTAPE)/tools/configure.py \
+		--output-directory $(DUKOUT)/ \
+		--compiler=djgpp \
+		--architecture=x32 \
+		--platform=dos \
+		--option-file=$(DUKTAPE)/config/examples/performance_sensitive.yaml \
+		-DDUK_USE_FATAL_HANDLER
 
 $(EXE): $(PARTS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
@@ -65,10 +75,10 @@ init:
 
 clean:
 	rm -rf $(BUILDDIR)/
-	rm -f $(EXE) $(ZIP) JSLOG.TXT
+	rm -f $(PARTS) $(EXE) $(ZIP) JSLOG.TXT
 
 distclean: clean
-	$(MAKE) -C $(MUJS) clean
+	rm -rf $(DUKOUT)
 	rm -rf $(DOCDIR) TEST.TXT JSLOG.TXT
 
 .PHONY: clean distclean init doc

@@ -23,7 +23,7 @@ SOFTWARE.
 #ifndef __FUNCS_H__
 #define __FUNCS_H__
 
-#include <mujs.h>
+#include <duktape.h>
 #include "jSH.h"
 
 /************
@@ -34,6 +34,6 @@ SOFTWARE.
 /***********************
 ** exported functions **
 ***********************/
-extern void init_funcs(js_State *J, int argc, char *argv[], int idx);
+extern void init_funcs(duk_context *J, int argc, char *argv[], int idx);
 
 #endif  // __FUNCS_H__

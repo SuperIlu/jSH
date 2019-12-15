@@ -23,7 +23,7 @@ SOFTWARE.
 #ifndef __FILE_H__
 #define __FILE_H__
 
-#include <mujs.h>
+#include <duktape.h>
 #include "jSH.h"
 
 /************
@@ -35,6 +35,6 @@ SOFTWARE.
 /***********************
 ** exported functions **
 ***********************/
-extern void init_file(js_State *J);
+extern void init_file(duk_context *J);
 
 #endif  // __FILE_H__

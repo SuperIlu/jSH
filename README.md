@@ -32,7 +32,7 @@ Println("All done...");
 And can be run like this: `JSH.EXE RENALL.JS SOMEDIR .FOO .BAR` to rename all files ending in `.FOO` to `.BAR`.
 
 jSH was only possible due to the work of these people/projects:
-* [MuJS](https://mujs.com/) JavaScript interpreter
+* [Duktape](https://duktape.org/) JavaScript interpreter
 * [DJGPP](http://www.delorie.com/djgpp/) from DJ Delorie and the [Linux compile scripts](https://github.com/andrewwutw/build-djgpp) by Andrew Wu.
 
 You can find me on [Twitter](https://twitter.com/dec_hl) if you want...
@@ -60,7 +60,7 @@ I used the following command lines to update/install my dependencies:
 ```bash
 sudo apt-get update
 sudo apt-get dist-upgrade
-sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm
+sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm python-yaml
 sudo npm install -g jsdoc
 sudo npm install -g tui-jsdoc-template
 ```
@@ -93,8 +93,8 @@ See the [changelog](/CHANGELOG.md) for the projects history.
 ## jSH
 All code from me is released under **MIT license**.
 
-## MuJS
-MuJS is released under **ISC license**. See *COPYING* in the MuJS folder for details.
+## Duktape
+Duktape is released under **MIT license**. See *LICENSE.txt* in the duktape folder for details.
 
 ## CWSDPMI.EXE
 [CWSDPMI](http://sandmann.dotster.com/cwsdpmi/) DPMI host is licensed under **GPL**. The documentation states:

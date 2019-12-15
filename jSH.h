@@ -23,53 +23,62 @@ SOFTWARE.
 #ifndef __JSH_H__
 #define __JSH_H__
 
-#include <mujs.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+#include <duktape.h>
 
 /************
 ** defines **
 ************/
 
-#define SYSINFO ">>> " //!< logfile line prefix for system messages
+#define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.95       //!< version number
-#define JSH_VERSION_STR "V0.1" //!< version number as string
+#define JSH_VERSION 0.2         //!< version number
+#define JSH_VERSION_STR "V0.2"  //!< version number as string
 
-#define BOOT_DIR "JSBOOT/" //!< directory with boot files.
+#define BOOT_DIR "JSBOOT/"  //!< directory with boot files.
 
-#define LOGFILE "JSLOG.TXT" //!< filename for logfile
-#define LOGSTREAM logfile   //!< output stream for logging on DOS
+#define LOGFILE "JSLOG.TXT"  //!< filename for logfile
+#define LOGSTREAM logfile    //!< output stream for logging on DOS
 
 /***********
 ** macros **
 ***********/
 //! define a global function
-#define FUNCDEF(j, f, n, p)          \
-    {                                \
-        js_newcfunction(j, f, n, p); \
-        js_setglobal(j, n);          \
+#define FUNCDEF(j, f, n, p)           \
+    {                                 \
+        duk_push_c_function(j, f, p); \
+        duk_put_global_string(j, n);  \
     }
 
 //! define a global property of type number
-#define PROPDEF_N(j, i, n)  \
-    {                       \
-        js_newnumber(j, i); \
-        js_setglobal(j, n); \
+#define PROPDEF_N(j, i, n)           \
+    {                                \
+        duk_push_number(j, i);       \
+        duk_put_global_string(j, n); \
     }
 
 //! define a global property of type boolean
-#define PROPDEF_B(j, i, n)   \
-    {                        \
-        js_newboolean(j, i); \
-        js_setglobal(j, n);  \
+#define PROPDEF_B(j, i, n)           \
+    {                                \
+        duk_push_boolean(j, i);      \
+        duk_put_global_string(j, n); \
     }
 
 //! define a method in a class
-#define PROTDEF(j, f, t, n, p)                                             \
-    {                                                                      \
-        js_newcfunction(j, f, t ".prototype." n, p);                       \
-        js_defproperty(j, -2, n, JS_READONLY | JS_DONTENUM | JS_DONTCONF); \
+#define PROTDEF(j, f, n, p)            \
+    {                                  \
+        duk_push_c_function(j, f, p);  \
+        duk_put_prop_string(j, -2, n); \
+    }
+
+#define NATIVE_PTR(j, p, t)                               \
+    {                                                     \
+        duk_push_this(j);                                 \
+        duk_get_prop_string(j, -1, DUK_HIDDEN_SYMBOL(t)); \
+        p = duk_get_pointer(j, -1);                       \
+        duk_pop(j);                                       \
     }
 
 //! printf-style write info to logfile/console
@@ -116,10 +125,10 @@ SOFTWARE.
 /*********************
 ** global variables **
 *********************/
-extern FILE *logfile; //!< file for log output.
+extern FILE *logfile;  //!< file for log output.
 
 /***********************
 ** exported functions **
 ***********************/
 
-#endif // __JSH_H__
+#endif  // __JSH_H__

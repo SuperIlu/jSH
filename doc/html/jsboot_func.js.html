@@ -137,6 +137,8 @@ function StartupInfo() {
 	if (Debugln) {
 		Debugln("Memory=" + JSON.stringify(MemoryInfo()));
 
+		Debugln("Parameters=" + JSON.stringify(args));
+
 		var funcs = [];
 		var other = [];
 		for (var e in global) {

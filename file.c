@@ -19,16 +19,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+#include <duktape.h>
 #include <errno.h>
-#include <mujs.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "jSH.h"
 #include "file.h"
+#include "jSH.h"
 
 /************
 ** defines **
@@ -52,12 +51,15 @@ typedef struct __file {
  *
  * @param J VM state.
  */
-static void File_Finalize(js_State *J, void *data) {
-    file_t *f = (file_t *)data;
+static duk_ret_t File_Finalize(duk_context *J) {
+    duk_get_prop_string(J, -1, DUK_HIDDEN_SYMBOL(TAG_FILE));
+    file_t *f = duk_get_pointer(J, -1);
+
     if (f->file) {
         fclose(f->file);
     }
     free(f);
+    return 0;
 }
 
 /**
@@ -66,34 +68,49 @@ static void File_Finalize(js_State *J, void *data) {
  *
  * @param J VM state.
  */
-static void new_File(js_State *J) {
-    const char *fname = js_tostring(J, 1);
+static duk_ret_t new_File(duk_context *J) {
+    if (!duk_is_constructor_call(J)) {
+        return DUK_RET_TYPE_ERROR;
+    }
+
+    const char *fname = duk_require_string(J, 0);
 
     file_t *f = malloc(sizeof(file_t));
     if (!f) {
-        js_error(J, "No memory for file '%s'", fname);
-        return;
+        return duk_generic_error(J, "No memory for file '%s'", fname);
     }
 
-    const char *mode = js_tostring(J, 2);
+    const char *mode = duk_require_string(J, 1);
     if (mode[0] == 'a' || mode[0] == 'w') {
         f->writeable = true;
     } else if (mode[0] == 'r') {
         f->writeable = false;
     } else {
-        js_error(J, "Unknown mode for file '%s'", mode);
         free(f);
-        return;
+        return duk_generic_error(J, "Unknown mode for file '%s'", mode);
     }
 
     f->file = fopen(fname, mode);
     if (!f->file) {
-        js_error(J, "cannot open file '%s': %s", fname, strerror(errno));
+        free(f);
+        return duk_generic_error(J, "cannot open file '%s': %s", fname, strerror(errno));
     }
 
-    js_currentfunction(J);
-    js_getproperty(J, -1, "prototype");
-    js_newuserdata(J, TAG_FILE, f, File_Finalize);
+    // Get access to the default instance.
+    duk_push_this(J);  // -> stack: [ name this ]
+
+    duk_push_pointer(J, f);
+    duk_put_prop_string(J, -2, DUK_HIDDEN_SYMBOL(TAG_FILE));
+
+    /* Set this.name to name. */
+    duk_push_string(J, fname);
+    duk_put_prop_string(J, -2, "name");
+
+    duk_push_c_function(J, File_Finalize, 1);
+    duk_set_finalizer(J, -2);
+
+    /* Return undefined: default instance will be used. */
+    return 0;
 }
 
 /**
@@ -102,24 +119,25 @@ static void new_File(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_ReadByte(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_ReadByte(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (!f->file) {
-        js_error(J, "File was closed!");
-        return;
+        return duk_generic_error(J, "File was closed!");
     }
 
     if (f->writeable) {
-        js_error(J, "File was opened for writing!");
-        return;
+        return duk_generic_error(J, "File was opened for writing!");
     } else {
         int ch = getc(f->file);
         if (ch != EOF) {
-            js_pushnumber(J, ch);
+            duk_push_int(J, ch);
         } else {
-            js_pushnull(J);
+            duk_push_null(J);
         }
     }
+    return 1;
 }
 
 /**
@@ -128,25 +146,26 @@ static void File_ReadByte(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_ReadLine(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_ReadLine(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (!f->file) {
-        js_error(J, "File was closed!");
-        return;
+        return duk_generic_error(J, "File was closed!");
     }
 
     if (f->writeable) {
-        js_error(J, "File was opened for writing!");
-        return;
+        return duk_generic_error(J, "File was opened for writing!");
     } else {
         char line[MAX_LINE_LENGTH + 1];
         char *s = fgets(line, sizeof(line), f->file);
         if (s) {
-            js_pushstring(J, line);
+            duk_push_string(J, line);
         } else {
-            js_pushnull(J);
+            duk_push_null(J);
         }
     }
+    return 1;
 }
 
 /**
@@ -155,12 +174,15 @@ static void File_ReadLine(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_Close(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_Close(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (f->file) {
         fclose(f->file);
         f->file = NULL;
     }
+    return 0;
 }
 
 /**
@@ -169,22 +191,23 @@ static void File_Close(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_WriteByte(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_WriteByte(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (!f->file) {
-        js_error(J, "File was closed!");
-        return;
+        return duk_generic_error(J, "File was closed!");
     }
 
-    int ch = js_toint16(J, 1);
+    int ch = duk_require_int(J, 0);
 
     if (!f->writeable) {
-        js_error(J, "File was opened for reading!");
-        return;
+        return duk_generic_error(J, "File was opened for reading!");
     } else {
         fputc((char)ch, f->file);
         fflush(f->file);
     }
+    return 0;
 }
 
 /**
@@ -193,23 +216,24 @@ static void File_WriteByte(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_WriteLine(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_WriteLine(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (!f->file) {
-        js_error(J, "File was closed!");
-        return;
+        return duk_generic_error(J, "File was closed!");
     }
 
-    const char *line = js_tostring(J, 1);
+    const char *line = duk_require_string(J, 0);
 
     if (!f->writeable) {
-        js_error(J, "File was opened for reading!");
-        return;
+        return duk_generic_error(J, "File was opened for reading!");
     } else {
         fputs(line, f->file);
         fputc('\n', f->file);
         fflush(f->file);
     }
+    return 0;
 }
 
 /**
@@ -218,22 +242,23 @@ static void File_WriteLine(js_State *J) {
  *
  * @param J VM state.
  */
-static void File_WriteString(js_State *J) {
-    file_t *f = js_touserdata(J, 0, TAG_FILE);
+static duk_ret_t File_WriteString(duk_context *J) {
+    file_t *f;
+    NATIVE_PTR(J, f, TAG_FILE);
+
     if (!f->file) {
-        js_error(J, "File was closed!");
-        return;
+        return duk_generic_error(J, "File was closed!");
     }
 
-    const char *line = js_tostring(J, 1);
+    const char *line = duk_require_string(J, 0);
 
     if (!f->writeable) {
-        js_error(J, "File was opened for reading!");
-        return;
+        return duk_generic_error(J, "File was opened for reading!");
     } else {
         fputs(line, f->file);
         fflush(f->file);
     }
+    return 0;
 }
 
 /***********************
@@ -244,18 +269,24 @@ static void File_WriteString(js_State *J) {
  *
  * @param J VM state.
  */
-void init_file(js_State *J) {
-    // js_getglobal(J, "Object");
-    // js_getproperty(J, -1, "prototype");
-    js_newobject(J);
-    {
-        PROTDEF(J, File_ReadByte, TAG_FILE, "ReadByte", 0);
-        PROTDEF(J, File_ReadLine, TAG_FILE, "ReadLine", 0);
-        PROTDEF(J, File_Close, TAG_FILE, "Close", 0);
-        PROTDEF(J, File_WriteByte, TAG_FILE, "WriteByte", 1);
-        PROTDEF(J, File_WriteLine, TAG_FILE, "WriteLine", 1);
-        PROTDEF(J, File_WriteString, TAG_FILE, "WriteString", 1);
-    }
-    js_newcconstructor(J, new_File, new_File, TAG_FILE, 2);
-    js_defglobal(J, TAG_FILE, JS_DONTENUM);
+void init_file(duk_context *J) {
+    // Push constructor function
+    duk_push_c_function(J, new_File, 2);
+
+    // Push MyObject.prototype object.
+    duk_push_object(J);  // -> stack: [ MyObject proto ]
+
+    // Set MyObject.prototype.funcs()
+    PROTDEF(J, File_ReadByte, "ReadByte", 0);
+    PROTDEF(J, File_ReadLine, "ReadLine", 0);
+    PROTDEF(J, File_Close, "Close", 0);
+    PROTDEF(J, File_WriteByte, "WriteByte", 1);
+    PROTDEF(J, File_WriteLine, "WriteLine", 1);
+    PROTDEF(J, File_WriteString, "WriteString", 1);
+
+    /* Set MyObject.prototype = proto */
+    duk_put_prop_string(J, -2, "prototype"); /* -> stack: [ MyObject ] */
+
+    /* Finally, register MyObject to the global object */
+    duk_put_global_string(J, "File"); /* -> stack: [ ] */
 }
