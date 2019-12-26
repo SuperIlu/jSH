@@ -96,6 +96,9 @@ All code from me is released under **MIT license**.
 ## Duktape
 Duktape is released under **MIT license**. See *LICENSE.txt* in the duktape folder for details.
 
+## DZComm
+DZComm serial library is release as **gift-ware**. See *readme.txt* in the dzcomm folder for details.
+
 ## CWSDPMI.EXE
 [CWSDPMI](http://sandmann.dotster.com/cwsdpmi/) DPMI host is licensed under **GPL**. The documentation states:
 > The files in this binary distribution may be redistributed under the GPL (with source) or without the source code provided.

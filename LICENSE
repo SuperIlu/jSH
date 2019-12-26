@@ -4,6 +4,8 @@ For jSH code, written by me, the MIT license below applies.
 Duktape
 Duktape is released under MIT license.
 
+DZComm is released as gift-ware.
+
 CWSDPMI.EXE:
 CWSDPMI (http://sandmann.dotster.com/cwsdpmi/) DPMI host is licensed under GPL.
 The documentation states:
@@ -62,5 +64,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+   Dzcomm is gift-ware. It was created by a number of people working in 
+   cooperation, and is given to you freely as a gift. You may use, modify, 
+   redistribute, and generally hack it about in any way you like, and you do 
+   not have to give us anything in return. However, if you like this product 
+   you are encouraged to thank us by making a return gift to the dzcomm 
+   community. This could be by writing an add-on package, providing a useful 
+   bug report, making an improvement to the library, or perhaps just 
+   releasing the sources of your program so that other people can learn from 
+   them. If you redistribute parts of this code or make something using it,
+   it would be nice if you mentioned dzcomm somewhere in the credits, but you 
+   are not required to do this. We trust you not to abuse our generosity.
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

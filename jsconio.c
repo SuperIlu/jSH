@@ -170,6 +170,11 @@ static duk_ret_t f_GetXKey(duk_context *J) {
     return 1;
 }
 
+static duk_ret_t f_KbHit(duk_context *J) {
+    duk_push_boolean(J, kbhit());
+    return 1;
+}
+
 /***********************
 ** exported functions **
 ***********************/
@@ -245,6 +250,7 @@ void init_conio(duk_context *J) {
     FUNCDEF(J, f_AsciiCharDef, "AsciiCharDef", 1);
     FUNCDEF(J, f_EnableScrolling, "EnableScrolling", 1);
     FUNCDEF(J, f_GetXKey, "GetXKey", 0);
+    FUNCDEF(J, f_KbHit, "KbHit", 0);
 }
 
 /*

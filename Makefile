@@ -11,11 +11,14 @@ DUKOUT=$(DUKTAPE)/djgpp
 DUKSRC=$(DUKOUT)/duktape.c
 DUKOBJ=$(DUKOUT)/duktape.o
 
-CFLAGS=-MMD -Wall -O2 -march=i386 -mtune=i586 -fgnu89-inline -O2 #-DDEBUG_ENABLED 
-#CFLAGS=-MMD -Wall -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED -std=c99 
-CFLAGS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I$(DUKTAPE)/extras/print-alert -I$(DUKOUT)
+DZCOMMDIR=dzcomm
+LIBDZCOMM=$(DZCOMMDIR)/lib/djgpp/libdzcom.a
 
-LIBS=-lm -lemu
+CFLAGS=-MMD -Wall -O2 -march=i386 -mtune=i586 -fgnu89-inline -fomit-frame-pointer #-DDEBUG_ENABLED 
+#CFLAGS=-MMD -Wall -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED -std=c99 
+CFLAGS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I$(DUKTAPE)/extras/print-alert -I$(DUKOUT) -I$(DZCOMMDIR)/include
+
+LIBS=-lm -lemu -ldzcom -L$(DZCOMMDIR)/lib/djgpp
 
 EXE=JSH.EXE
 ZIP=JSH.ZIP
@@ -37,13 +40,19 @@ PARTS= \
 	$(DUKOBJ) \
 	$(DUKTAPE)/extras/print-alert/duk_print_alert.o \
 	$(BUILDDIR)/file.o \
+	$(BUILDDIR)/comport.o \
 	$(BUILDDIR)/funcs.o \
 	$(BUILDDIR)/jsconio.o \
 	$(BUILDDIR)/jSH.o
 
-all: init $(EXE)
+all: init dzcomm $(EXE)
 
 duktape: $(DUKOBJ)
+
+dzcomm: $(LIBDZCOMM)
+
+$(LIBDZCOMM):
+	$(MAKE) -C $(DZCOMMDIR) lib/djgpp/libdzcom.a
 
 $(DUKSRC):
 	$(DUKTAPE)/tools/configure.py \
@@ -79,6 +88,7 @@ clean:
 
 distclean: clean
 	rm -rf $(DUKOUT)
+	$(MAKE) -C $(DZCOMMDIR) clean
 	rm -rf $(DOCDIR) TEST.TXT JSLOG.TXT
 
 .PHONY: clean distclean init doc

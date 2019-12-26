@@ -11,3 +11,6 @@ sys-include/*
 duktape-2.5.0/djgpp/
 *.pyc
 *.o
+*.a
+*.d
+dzcomm/obj/djgpp/asmdef.s

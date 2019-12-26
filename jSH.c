@@ -28,6 +28,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "comport.h"
 #include "file.h"
 #include "funcs.h"
 #include "jSH.h"
@@ -49,7 +50,8 @@ const char *lastError;
  * @brief show usage on console
  */
 static void usage() {
-    fputs("Usage: JSH.EXE <script> [parameter]\n", stderr);
+    fputs("Usage: JSH.EXE [-d] <script> [parameter]\n", stderr);
+    fputs("    -d             : Enable debug output.\n", stderr);
     fputs("\n", stderr);
     fputs("This is jSH " JSH_VERSION_STR "\n", stderr);
     fputs("(c) 2019 by Andre Seidelt <superilu@yahoo.com> and others.\n", stderr);
@@ -196,6 +198,7 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
     init_funcs(J, argc, argv, idx);
     init_file(J);
     init_conio(J);
+    init_comport(J);
 
     lastError = NULL;
     // do some more init from JS
@@ -205,6 +208,7 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
             doFile(J, script);             // load main file and run it
         }
     }
+    shutdown_comport();
     LOG("jSH Shutdown...\n");
     fclose(logfile);
 

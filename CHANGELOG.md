@@ -1,3 +1,6 @@
+**V0.3 added COM port access**
+* Added DZComm for COM port access.
+
 **V0.2 new JS engine**
 * Switched from MuJS to duktape JS engine.
 

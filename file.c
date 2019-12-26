@@ -284,9 +284,9 @@ void init_file(duk_context *J) {
     PROTDEF(J, File_WriteLine, "WriteLine", 1);
     PROTDEF(J, File_WriteString, "WriteString", 1);
 
-    /* Set MyObject.prototype = proto */
-    duk_put_prop_string(J, -2, "prototype"); /* -> stack: [ MyObject ] */
+    // Set MyObject.prototype = proto
+    duk_put_prop_string(J, -2, "prototype");  // -> stack: [ MyObject ]
 
-    /* Finally, register MyObject to the global object */
-    duk_put_global_string(J, "File"); /* -> stack: [ ] */
+    // Finally, register MyObject to the global object
+    duk_put_global_string(J, "File");  // -> stack: [ ]
 }
