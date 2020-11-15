@@ -107,6 +107,9 @@ wattclean:
 zclean:
 	$(MAKE) -C $(ZLIB) -f Makefile.dojs clean
 
+fixnewlines:
+	find . -iname *.sh -exec dos2unix -v \{\} \;
+
 .PHONY: clean distclean init doc
 
 DEPS := $(wildcard $(BUILDDIR)/*.d)
