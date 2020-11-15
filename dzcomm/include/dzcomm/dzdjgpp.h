@@ -42,12 +42,26 @@ void _unlock_dpmi_data(void *addr, int size);
 
 #define END_OF_FUNCTION(x)          void x##_end(void) { }
 #define END_OF_STATIC_FUNCTION(x)   static void x##_end(void) { }
-#define LOCK_DATA(d, s)             _go32_dpmi_lock_data(d, s)
-#define LOCK_CODE(c, s)             _go32_dpmi_lock_code(c, s)
-#define UNLOCK_DATA(d,s)            _unlock_dpmi_data(d, s)
-#define LOCK_VARIABLE(x)            LOCK_DATA((void *)&x, sizeof(x))
-#define LOCK_FUNCTION(x)            LOCK_CODE(x, (long)x##_end - (long)x)
 
+#ifndef LOCK_DATA
+#define LOCK_DATA(d, s)             _go32_dpmi_lock_data(d, s)
+#endif
+
+#ifndef LOCK_CODE
+#define LOCK_CODE(c, s)             _go32_dpmi_lock_code(c, s)
+#endif
+
+#ifndef UNLOCK_DATA
+#define UNLOCK_DATA(d,s)            _unlock_dpmi_data(d, s)
+#endif
+
+#ifndef LOCK_VARIABLE
+#define LOCK_VARIABLE(x)            LOCK_DATA((void *)&x, sizeof(x))
+#endif
+
+#ifndef LOCK_FUNCTION
+#define LOCK_FUNCTION(x)            LOCK_CODE(x, (long)x##_end - (long)x)
+#endif
 
 
 /* describe the asm syntax for this platform */

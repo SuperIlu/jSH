@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,17 @@ SOFTWARE.
 #ifndef __FUNCS_H__
 #define __FUNCS_H__
 
-#include <duktape.h>
+#include <mujs.h>
 #include "jSH.h"
 
 /************
 ** defines **
 ************/
-#define JSINC_FUNC BOOT_DIR "func.js"  //!< boot script for grx subsystem
+#define JSINC_FUNC JSBOOT_DIR "func.js"  //!< boot script for grx subsystem
 
 /***********************
 ** exported functions **
 ***********************/
-extern void init_funcs(duk_context *J, int argc, char *argv[], int idx);
+extern void init_funcs(js_State *J, int argc, char *argv[], int idx);
 
 #endif  // __FUNCS_H__

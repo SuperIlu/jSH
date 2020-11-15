@@ -628,6 +628,8 @@ void dzcomm_closedown(void) {
         comm_port_inited_list = NULL;
     }
 
+    comm_port_inited_list_size = 0;
+
     /* Do any machine/OS specific closedown stuff */
     if (comm_port_funcs != NULL) {
         if (comm_port_funcs->closedown != NULL) comm_port_funcs->closedown();

@@ -6,22 +6,21 @@
 #DJGPP=/Users/iluvatar/tmp/djgpp/bin
 DJGPP=/home/ilu/djgpp/bin
 
-DUKTAPE=duktape-2.5.0
-DUKOUT=$(DUKTAPE)/djgpp
-DUKSRC=$(DUKOUT)/duktape.c
-DUKOBJ=$(DUKOUT)/duktape.o
-
+MUJS=mujs-1.0.5
 DZCOMMDIR=dzcomm
 LIBDZCOMM=$(DZCOMMDIR)/lib/djgpp/libdzcom.a
+WATT32=watt32-2.2dev.rel.11/
+KUBAZIP=zip
 
-CFLAGS=-MMD -Wall -O2 -march=i386 -mtune=i586 -fgnu89-inline -fomit-frame-pointer #-DDEBUG_ENABLED 
-#CFLAGS=-MMD -Wall -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -DDEBUG_ENABLED -std=c99 
-CFLAGS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I$(DUKTAPE)/extras/print-alert -I$(DUKOUT) -I$(DZCOMMDIR)/include
+INCLUDES=-I$(MUJS) -I$(DZCOMMDIR)/include -I$(WATT32)/inc -I$(KUBAZIP)/src
+LIBS=-lmujs -lm -lemu -ldzcom -lwatt
 
-LIBS=-lm -lemu -ldzcom -L$(DZCOMMDIR)/lib/djgpp
+CDEF=-DGC_BEFORE_MALLOC #-DDEBUG_ENABLED #-DMEMDEBUG 
+CFLAGS=-MMD -Wall -std=gnu99 -O2 -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -Wmissing-prototypes $(CDEF)
+LDFLAGS=-L$(MUJS)/build/release -L$(DZCOMMDIR)/lib/djgpp -L$(WATT32)/lib
 
 EXE=JSH.EXE
-ZIP=JSH.ZIP
+RELZIP=jsh.zip
 
 BUILDDIR=build
 
@@ -37,42 +36,47 @@ RANLIB=$(DJGPP)/$(CROSS_PLATFORM)ranlib
 export
 
 PARTS= \
-	$(DUKOBJ) \
-	$(DUKTAPE)/extras/print-alert/duk_print_alert.o \
+	$(BUILDDIR)/zip/src/zip.o \
 	$(BUILDDIR)/file.o \
 	$(BUILDDIR)/comport.o \
 	$(BUILDDIR)/funcs.o \
 	$(BUILDDIR)/jsconio.o \
+	$(BUILDDIR)/zipfile.o \
+	$(BUILDDIR)/watt.o \
+	$(BUILDDIR)/socket.o \
+	$(BUILDDIR)/lowlevel.o \
 	$(BUILDDIR)/jSH.o
 
-all: init dzcomm $(EXE)
+all: init libmujs dzcomm libwatt32 $(EXE)
 
-duktape: $(DUKOBJ)
+libmujs: $(MUJS)/build/release/libmujs.a
 
 dzcomm: $(LIBDZCOMM)
+
+libwatt32: $(WATT32)/lib/libwatt.a
 
 $(LIBDZCOMM):
 	$(MAKE) -C $(DZCOMMDIR) lib/djgpp/libdzcom.a
 
-$(DUKSRC):
-	$(DUKTAPE)/tools/configure.py \
-		--output-directory $(DUKOUT)/ \
-		--compiler=djgpp \
-		--architecture=x32 \
-		--platform=dos \
-		--option-file=$(DUKTAPE)/config/examples/performance_sensitive.yaml \
-		-DDUK_USE_FATAL_HANDLER
+$(MUJS)/build/release/libmujs.a:
+	$(MAKE) -C $(MUJS) build/release/libmujs.a
+
+$(WATT32)/lib/libwatt.a:
+	DJ_PREFIX=$(DJGPP) $(MAKE) -C $(WATT32)/src -f DJGPP.MAK
 
 $(EXE): $(PARTS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(STRIP) $@
 
-$(BUILDDIR)/%.o: %.c
+$(BUILDDIR)/%.o: %.c Makefile
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/zip/src/%.o: $(KUBAZIP)/src/%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 zip: all doc
-	rm -f $(ZIP)
-	zip -9 -v -r $(ZIP) $(EXE) JC.JS JC.BAT CWSDPMI.EXE LICENSE README.md CHANGELOG.md jsboot/ $(DOCDIR)
+	rm -f $(RELZIP)
+	zip -9 -v -r $(RELZIP) $(EXE) JC.JS JC.BAT CWSDPMI.EXE LICENSE README.md CHANGELOG.md jsboot/ scripts/ $(DOCDIR)
 
 doc:
 	rm -rf $(DOCDIR)
@@ -80,16 +84,28 @@ doc:
 	cd doc && jsdoc -c jsdoc.conf.json -d ../$(DOCDIR)
 
 init:
-	mkdir -p $(BUILDDIR)
+	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src
+	# make sure compile time is always updated
+	rm -f $(BUILDDIR)/jSH.o
 
 clean:
 	rm -rf $(BUILDDIR)/
 	rm -f $(PARTS) $(EXE) $(ZIP) JSLOG.TXT
 
-distclean: clean
-	rm -rf $(DUKOUT)
-	$(MAKE) -C $(DZCOMMDIR) clean
+distclean: clean jsclean dzclean wattclean
 	rm -rf $(DOCDIR) TEST.TXT JSLOG.TXT
+
+dzclean:
+	$(MAKE) -C $(DZCOMMDIR) clean
+
+jsclean:
+	$(MAKE) -C $(MUJS) clean
+
+wattclean:
+	$(MAKE) -C $(WATT32)/src -f DJGPP.MAK clean
+
+zclean:
+	$(MAKE) -C $(ZLIB) -f Makefile.dojs clean
 
 .PHONY: clean distclean init doc
 

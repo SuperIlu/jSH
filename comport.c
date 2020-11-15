@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <duktape.h>
+#include "comport.h"
+
+#include <dzcomm.h>
 #include <errno.h>
+#include <mujs.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <dzcomm.h>
-#include "comport.h"
 #include "jSH.h"
 
 /************
@@ -42,6 +43,23 @@ SOFTWARE.
 *********************/
 static bool com_used[COM_NUM_PORTS];  //!< keep track of opened ports
 
+/************
+** structs **
+************/
+//! file userdata definition
+typedef struct __comport {
+    comm_port *port;  //!< the port pointer
+    int port_num;     //!< port number
+} comport_t;
+
+#define COM_CLEANUP(p)                 \
+    {                                  \
+        comm_port_uninstall(p->port);  \
+        comm_port_delete(p->port);     \
+        com_used[p->port_num] = false; \
+        free(p);                       \
+    }
+
 /*********************
 ** static functions **
 *********************/
@@ -50,22 +68,12 @@ static bool com_used[COM_NUM_PORTS];  //!< keep track of opened ports
  *
  * @param J VM state.
  */
-static duk_ret_t Com_Finalize(duk_context *J) {
-    // get pointer and port number
-    duk_get_prop_string(J, -1, DUK_HIDDEN_SYMBOL(TAG_COM));
-    comm_port *port = duk_get_pointer(J, -1);
-    duk_get_prop_string(J, -1, DUK_HIDDEN_SYMBOL(COM_PORT));
-    int com = duk_get_int(J, -1);
+static void Com_Finalize(js_State *J, void *data) {
+    comport_t *p = (comport_t *)data;
 
-    DEBUGF("fin COM%d=%p\n", com + 1, port);
+    DEBUGF("fin COM%d=%p\n", p->port_num + 1, p->port);
 
-    if (port) {
-        comm_port_uninstall(port);
-        comm_port_delete(port);
-    }
-    com_used[com] = false;
-
-    return 0;
+    COM_CLEANUP(p);
 }
 
 /**
@@ -74,83 +82,105 @@ static duk_ret_t Com_Finalize(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t new_Com(duk_context *J) {
-    if (!duk_is_constructor_call(J)) {
-        return DUK_RET_TYPE_ERROR;
-    }
+static void new_Com(js_State *J) {
+    NEW_OBJECT_PREP(J);
 
-    int com = duk_require_int(J, 0);
+    int com = js_tointeger(J, 1);
     if (com < _com1 || com > _com4) {
-        return duk_generic_error(J, "COM parameter must be one of COM.PORT.COMx!");
+        js_error(J, "COM parameter must be one of COM.PORT.COMx!");
+        return;
+
     } else if (com_used[com]) {
-        return duk_generic_error(J, "COM port already opened!");
+        js_error(J, "COM port already opened!");
+        return;
     }
+
+    comport_t *p = malloc(sizeof(comport_t));
+    if (!p) {
+        JS_ENOMEM(J);
+        return;
+    }
+    p->port = NULL;
+    p->port_num = com;
+
+    DEBUGF("init COM%d=%p\n", p->port_num + 1, p->port);
     com_used[com] = true;
-    comm_port *port = comm_port_init(com);
-    if (!port) {
-        return duk_generic_error(J, "COM error: %s!", szDZCommErr);
+    p->port = comm_port_init(com);
+    if (!p->port) {
+        js_error(J, "COM error: %s!", szDZCommErr);
+        COM_CLEANUP(p);
+        return;
     }
 
-    int baud = duk_require_int(J, 1);
+    DEBUGF("set baud COM%d=%p\n", p->port_num + 1, p->port);
+    int baud = js_tointeger(J, 2);
     if (baud < _75 || baud > _115200) {
-        return duk_generic_error(J, "Baud rate must be one of COM.BAUD.Bx!");
+        js_error(J, "Baud rate must be one of COM.BAUD.Bx!");
+        COM_CLEANUP(p);
+        return;
     }
-    comm_port_set_baud_rate(port, baud);
+    comm_port_set_baud_rate(p->port, baud);
 
-    int bits = duk_require_int(J, 2);
+    DEBUGF("set bits COM%d=%p\n", p->port_num + 1, p->port);
+    int bits = js_tointeger(J, 3);
     if (bits < BITS_5 || bits > BITS_8) {
-        return duk_generic_error(J, "Word length must be one of COM.BIT.BITS_x!");
+        js_error(J, "Word length must be one of COM.BIT.BITS_x!");
+        COM_CLEANUP(p);
+        return;
     }
-    comm_port_set_data_bits(port, bits);
+    comm_port_set_data_bits(p->port, bits);
 
-    int par = duk_require_int(J, 3);
+    DEBUGF("set parity COM%d=%p\n", p->port_num + 1, p->port);
+    int par = js_tointeger(J, 4);
     if (par < NO_PARITY || par > SPACE_PARITY) {
-        return duk_generic_error(J, "Word length must be one of COM.PARITY.x_PARITY!");
+        js_error(J, "Word length must be one of COM.PARITY.x_PARITY!");
+        COM_CLEANUP(p);
+        return;
     }
-    comm_port_set_parity(port, par);
+    comm_port_set_parity(p->port, par);
 
-    int stop = duk_require_int(J, 4);
+    DEBUGF("set stop COM%d=%p\n", p->port_num + 1, p->port);
+    int stop = js_tointeger(J, 5);
     if (stop != STOP_1 && stop != STOP_2) {
-        return duk_generic_error(J, "Stop bits must be one of COM.STOP.STOP_x!");
+        js_error(J, "Stop bits must be one of COM.STOP.STOP_x!");
+        COM_CLEANUP(p);
+        return;
     }
-    comm_port_set_stop_bits(port, stop);
+    comm_port_set_stop_bits(p->port, stop);
 
-    int flow = duk_require_int(J, 5);
+    DEBUGF("set flow COM%d=%p\n", p->port_num + 1, p->port);
+    int flow = js_tointeger(J, 6);
     if (flow < NO_CONTROL || flow > RTS_CTS) {
-        return duk_generic_error(J, "Flow control must be one of COM.FLOW.x!");
+        js_error(J, "Flow control must be one of COM.FLOW.x!");
+        COM_CLEANUP(p);
+        return;
     }
-    comm_port_set_flow_control(port, flow);
+    comm_port_set_flow_control(p->port, flow);
 
-    if (duk_is_number(J, 6) && duk_is_number(J, 7)) {
-        int addr = duk_get_int(J, 6);
-        int irq = duk_get_int(J, 7);
-        comm_port_set_port_address(port, addr);
+    DEBUGF("set addr/irq COM%d=%p\n", p->port_num + 1, p->port);
+    if (js_isnumber(J, 7) && js_isnumber(J, 8)) {
+        int addr = js_tointeger(J, 7);
+        int irq = js_tointeger(J, 8);
+        comm_port_set_port_address(p->port, addr);
         if (irq < 0 || irq > 15) {
-            return duk_generic_error(J, "Irq must be between 0..15!");
+            js_error(J, "Irq must be between 0..15!");
+            COM_CLEANUP(p);
+            return;
         }
-        comm_port_set_irq_num(port, irq);
+        comm_port_set_irq_num(p->port, irq);
     }
 
-    DEBUGF("Opening COM%d with irq=%d and port=0x%X as %p\n", com + 1, comm_port_get_irq_num(port), comm_port_get_port_address(port), port);
+    DEBUGF("Opening COM%d with irq=%d and port=0x%X as %p\n", com + 1, comm_port_get_irq_num(p->port), comm_port_get_port_address(p->port), p->port);
 
-    if (!comm_port_install_handler(port)) {
-        return duk_generic_error(J, "COM error: %s!", szDZCommErr);
+    if (!comm_port_install_handler(p->port)) {
+        js_error(J, "COM error: %s!", szDZCommErr);
+        COM_CLEANUP(p);
+        return;
     }
 
-    // Get access to the default instance.
-    duk_push_this(J);  // -> stack: [ name this ]
-
-    duk_push_int(J, com);
-    duk_put_prop_string(J, -2, DUK_HIDDEN_SYMBOL(COM_PORT));  // store port number
-
-    duk_push_pointer(J, port);
-    duk_put_prop_string(J, -2, DUK_HIDDEN_SYMBOL(TAG_COM));  // store port pointer
-
-    duk_push_c_function(J, Com_Finalize, 1);  // set finalized
-    duk_set_finalizer(J, -2);
-
-    /* Return undefined: default instance will be used. */
-    return 0;
+    js_currentfunction(J);
+    js_getproperty(J, -1, "prototype");
+    js_newuserdata(J, TAG_COM, p, Com_Finalize);
 }
 
 /**
@@ -159,33 +189,20 @@ static duk_ret_t new_Com(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_Close(duk_context *J) {
-    // get pointer and port number
-    duk_push_this(J);
-    duk_get_prop_string(J, -1, DUK_HIDDEN_SYMBOL(TAG_COM));
-    comm_port *port = duk_get_pointer(J, -1);
-    duk_get_prop_string(J, -1, DUK_HIDDEN_SYMBOL(COM_PORT));
-    int com = duk_get_int(J, -1);
-    duk_pop(J);
+static void Com_Close(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    DEBUGF("close COM%d=%p\n", com + 1, port);
+    DEBUGF("close COM%d=%p\n", p->port_num + 1, p->port);
 
     // close and delete port if still open, mark port as free again
-    if (port) {
-        comm_port_uninstall(port);
-        comm_port_delete(port);
+    if (p->port) {
+        comm_port_uninstall(p->port);
+        comm_port_delete(p->port);
+        p->port = NULL;
     } else {
-        return duk_generic_error(J, "Port is already closed!");
+        js_error(J, "Port is already closed!");
     }
-    com_used[com] = false;
-
-    // set port property to NULL
-    duk_push_this(J);
-    duk_push_pointer(J, NULL);
-    duk_put_prop_string(J, -2, DUK_HIDDEN_SYMBOL(TAG_COM));
-    duk_pop(J);
-
-    return 0;
+    com_used[p->port_num] = false;
 }
 
 /**
@@ -194,17 +211,14 @@ static duk_ret_t Com_Close(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_FlushInput(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_FlushInput(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        comm_port_flush_input(port);
+    if (p->port) {
+        comm_port_flush_input(p->port);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
-
-    return 0;
 }
 
 /**
@@ -213,17 +227,14 @@ static duk_ret_t Com_FlushInput(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_FlushOutput(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_FlushOutput(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        comm_port_flush_output(port);
+    if (p->port) {
+        comm_port_flush_output(p->port);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
-
-    return 0;
 }
 
 /**
@@ -231,15 +242,13 @@ static duk_ret_t Com_FlushOutput(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_IsOutputEmpty(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_IsOutputEmpty(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        duk_push_boolean(J, comm_port_out_empty(port) == -1);
-        return 1;
+    if (p->port) {
+        js_pushboolean(J, comm_port_out_empty(p->port) == -1);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
@@ -248,59 +257,50 @@ static duk_ret_t Com_IsOutputEmpty(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_IsOutputFull(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_IsOutputFull(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        duk_push_boolean(J, comm_port_out_full(port) == -1);
-        return 1;
+    if (p->port) {
+        js_pushboolean(J, comm_port_out_full(p->port) == -1);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
 /**
- * @brief com.WriteChar(string)
+ * @brief com.WriteByte(number)
  *
  * @param J VM state.
  */
-static duk_ret_t Com_WriteChar(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_WriteByte(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        duk_size_t len;
-        const char *str = duk_require_lstring(J, 0, &len);
+    if (p->port) {
+        const char ch = js_toint16(J, 1);
 
-        if (len >= 0) {
-            int ret = comm_port_out(port, str[0]);
-            if (ret != 1) {
-                return duk_generic_error(J, "TX buffer overflow!");
-            }
+        int ret = comm_port_out(p->port, ch);
+        if (ret != 1) {
+            js_error(J, "TX buffer overflow!");
         }
-        return 0;
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
 /**
- * @brief com.Write(string):number
+ * @brief com.WriteString(string):number
  *
  * @param J VM state.
  */
-static duk_ret_t Com_Write(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_WriteString(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        const char *str = duk_require_string(J, 0);
+    if (p->port) {
+        const char *str = js_tostring(J, 1);
 
-        duk_push_int(J, comm_port_string_send(port, str));
-        return 1;
+        js_pushnumber(J, comm_port_string_send(p->port, str));
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
@@ -309,15 +309,13 @@ static duk_ret_t Com_Write(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_IsInputEmpty(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_IsInputEmpty(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        duk_push_boolean(J, comm_port_in_empty(port) == -1);
-        return 1;
+    if (p->port) {
+        js_pushboolean(J, comm_port_in_empty(p->port) == -1);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
@@ -326,38 +324,34 @@ static duk_ret_t Com_IsInputEmpty(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_IsInputFull(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_IsInputFull(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        duk_push_boolean(J, comm_port_in_full(port) == -1);
-        return 1;
+    if (p->port) {
+        js_pushboolean(J, comm_port_in_full(p->port) == -1);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
 /**
- * @brief com.ReadChar():number
+ * @brief com.ReadByte():number
  *
  * @param J VM state.
  */
-static duk_ret_t Com_ReadChar(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_ReadByte(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
-        int ret = comm_port_test(port);
+    if (p->port) {
+        int ret = comm_port_test(p->port);
         DEBUGF("RC 0x%02X\n", ret);
         if (ret < 0) {
-            duk_push_null(J);
+            js_pushnull(J);
         } else {
-            duk_push_int(J, ((int)ret) & 0xFF);
+            js_pushnumber(J, ((int)ret) & 0xFF);
         }
-        return 1;
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
@@ -366,16 +360,15 @@ static duk_ret_t Com_ReadChar(duk_context *J) {
  *
  * @param J VM state.
  */
-static duk_ret_t Com_ReadBuffer(duk_context *J) {
-    comm_port *port;
-    NATIVE_PTR(J, port, TAG_COM);
+static void Com_ReadBuffer(js_State *J) {
+    comport_t *p = js_touserdata(J, 0, TAG_COM);
 
-    if (port) {
+    if (p->port) {
         int pos = 0;
         char buf[COM_BUFFER_SIZE];
 
         while (pos < COM_BUFFER_SIZE) {
-            int ret = comm_port_test(port);
+            int ret = comm_port_test(p->port);
             DEBUGF("RB %0x02X\n", ret);
             if (ret < 0) {
                 break;
@@ -384,33 +377,31 @@ static duk_ret_t Com_ReadBuffer(duk_context *J) {
                 pos++;
             }
         }
-        duk_push_lstring(J, buf, pos);
-        return 1;
-
+        js_pushlstring(J, buf, pos);
     } else {
-        return duk_generic_error(J, "Port is closed!");
+        js_error(J, "Port is closed!");
     }
 }
 
 /***********************
 ** exported functions **
 ***********************/
-#define COM_PUSH_BAUD(b, o)                \
-    {                                      \
-        duk_push_int(J, _##b);             \
-        duk_put_prop_string(J, o, "B" #b); \
-    }
-
-#define COM_PUSH_VALUE(n, o)           \
+#define COM_PUSH_BAUD(b)               \
     {                                  \
-        duk_push_int(J, n);            \
-        duk_put_prop_string(J, o, #n); \
+        js_pushnumber(J, _##b);        \
+        js_setproperty(J, -2, "B" #b); \
     }
 
-#define COM_PUSH_VALUE_NAME(n, v, o)  \
-    {                                 \
-        duk_push_int(J, v);           \
-        duk_put_prop_string(J, o, n); \
+#define COM_PUSH_VALUE(n)          \
+    {                              \
+        js_pushnumber(J, n);       \
+        js_setproperty(J, -2, #n); \
+    }
+
+#define COM_PUSH_VALUE_NAME(n, v) \
+    {                             \
+        js_pushnumber(J, v);      \
+        js_setproperty(J, -2, n); \
     }
 
 /**
@@ -418,7 +409,9 @@ static duk_ret_t Com_ReadBuffer(duk_context *J) {
  *
  * @param J VM state.
  */
-void init_comport(duk_context *J) {
+void init_comport(js_State *J) {
+    DEBUGF("%s\n", __PRETTY_FUNCTION__);
+
     // mark all ports as unused
     for (int i = 0; i < COM_NUM_PORTS; i++) {
         com_used[i] = false;
@@ -427,102 +420,99 @@ void init_comport(duk_context *J) {
     dzcomm_init();  // initialize DZComm
 
     // push the enums into COM object in 'global'
-    duk_idx_t com = duk_push_object(J);
+    js_newobject(J);
     {
         {
-            duk_idx_t baud = duk_push_object(J);
-            COM_PUSH_BAUD(50, baud);
-            COM_PUSH_BAUD(75, baud);
-            COM_PUSH_BAUD(110, baud);
-            COM_PUSH_BAUD(134, baud);
-            COM_PUSH_BAUD(150, baud);
-            COM_PUSH_BAUD(200, baud);
-            COM_PUSH_BAUD(300, baud);
-            COM_PUSH_BAUD(600, baud);
-            COM_PUSH_BAUD(1200, baud);
-            COM_PUSH_BAUD(1800, baud);
-            COM_PUSH_BAUD(2400, baud);
-            COM_PUSH_BAUD(4800, baud);
-            COM_PUSH_BAUD(9600, baud);
-            COM_PUSH_BAUD(19200, baud);
-            COM_PUSH_BAUD(38400, baud);
-            COM_PUSH_BAUD(57600, baud);
-            COM_PUSH_BAUD(115200, baud);
-            duk_put_prop_string(J, com, "BAUD");
+            js_newobject(J);
+            COM_PUSH_BAUD(50);
+            COM_PUSH_BAUD(75);
+            COM_PUSH_BAUD(110);
+            COM_PUSH_BAUD(134);
+            COM_PUSH_BAUD(150);
+            COM_PUSH_BAUD(200);
+            COM_PUSH_BAUD(300);
+            COM_PUSH_BAUD(600);
+            COM_PUSH_BAUD(1200);
+            COM_PUSH_BAUD(1800);
+            COM_PUSH_BAUD(2400);
+            COM_PUSH_BAUD(4800);
+            COM_PUSH_BAUD(9600);
+            COM_PUSH_BAUD(19200);
+            COM_PUSH_BAUD(38400);
+            COM_PUSH_BAUD(57600);
+            COM_PUSH_BAUD(115200);
+            js_setproperty(J, -2, "BAUD");
         }
 
         {
-            duk_idx_t par = duk_push_object(J);
-            COM_PUSH_VALUE(NO_PARITY, par);
-            COM_PUSH_VALUE(ODD_PARITY, par);
-            COM_PUSH_VALUE(EVEN_PARITY, par);
-            COM_PUSH_VALUE(MARK_PARITY, par);
-            COM_PUSH_VALUE(SPACE_PARITY, par);
-            duk_put_prop_string(J, com, "PARITY");
+            js_newobject(J);
+            COM_PUSH_VALUE(NO_PARITY);
+            COM_PUSH_VALUE(ODD_PARITY);
+            COM_PUSH_VALUE(EVEN_PARITY);
+            COM_PUSH_VALUE(MARK_PARITY);
+            COM_PUSH_VALUE(SPACE_PARITY);
+            js_setproperty(J, -2, "PARITY");
         }
 
         {
-            duk_idx_t stop = duk_push_object(J);
-            COM_PUSH_VALUE(STOP_1, stop);
-            COM_PUSH_VALUE(STOP_2, stop);
-            duk_put_prop_string(J, com, "STOP");
+            js_newobject(J);
+            COM_PUSH_VALUE(STOP_1);
+            COM_PUSH_VALUE(STOP_2);
+            js_setproperty(J, -2, "STOP");
         }
 
         {
-            duk_idx_t flow = duk_push_object(J);
-            COM_PUSH_VALUE(NO_CONTROL, flow);
-            COM_PUSH_VALUE(XON_XOFF, flow);
-            COM_PUSH_VALUE(RTS_CTS, flow);
-            duk_put_prop_string(J, com, "FLOW");
+            js_newobject(J);
+            COM_PUSH_VALUE(NO_CONTROL);
+            COM_PUSH_VALUE(XON_XOFF);
+            COM_PUSH_VALUE(RTS_CTS);
+            js_setproperty(J, -2, "FLOW");
         }
 
         {
-            duk_idx_t bits = duk_push_object(J);
-            COM_PUSH_VALUE(BITS_5, bits);
-            COM_PUSH_VALUE(BITS_6, bits);
-            COM_PUSH_VALUE(BITS_7, bits);
-            COM_PUSH_VALUE(BITS_8, bits);
-            duk_put_prop_string(J, com, "BIT");
+            js_newobject(J);
+            COM_PUSH_VALUE(BITS_5);
+            COM_PUSH_VALUE(BITS_6);
+            COM_PUSH_VALUE(BITS_7);
+            COM_PUSH_VALUE(BITS_8);
+            js_setproperty(J, -2, "BIT");
         }
 
         {
-            duk_idx_t port = duk_push_object(J);
-            COM_PUSH_VALUE_NAME("COM1", _com1, port);
-            COM_PUSH_VALUE_NAME("COM2", _com2, port);
-            COM_PUSH_VALUE_NAME("COM3", _com3, port);
-            COM_PUSH_VALUE_NAME("COM4", _com4, port);
-            duk_put_prop_string(J, com, "PORT");
+            js_newobject(J);
+            COM_PUSH_VALUE_NAME("COM1", _com1);
+            COM_PUSH_VALUE_NAME("COM2", _com2);
+            COM_PUSH_VALUE_NAME("COM3", _com3);
+            COM_PUSH_VALUE_NAME("COM4", _com4);
+            js_setproperty(J, -2, "PORT");
         }
     }
-    duk_put_global_string(J, "COM");
+    js_setglobal(J, "COM");
 
-    // Push constructor function
-    duk_push_c_function(J, new_Com, 8);
+    js_newobject(J);
+    {
+        NPROTDEF(J, Com, Close, 0);
+        NPROTDEF(J, Com, FlushInput, 0);
+        NPROTDEF(J, Com, FlushOutput, 0);
+        NPROTDEF(J, Com, IsOutputEmpty, 0);
+        NPROTDEF(J, Com, IsOutputFull, 0);
+        NPROTDEF(J, Com, WriteByte, 1);
+        NPROTDEF(J, Com, WriteString, 1);
+        NPROTDEF(J, Com, IsInputEmpty, 0);
+        NPROTDEF(J, Com, IsInputFull, 0);
+        NPROTDEF(J, Com, ReadByte, 0);
+        NPROTDEF(J, Com, ReadBuffer, 0);
+    }
+    CTORDEF(J, new_Com, TAG_COM, 8);
 
-    // Push MyObject.prototype object.
-    duk_push_object(J);  // -> stack: [ MyObject proto ]
-
-    // Set MyObject.prototype.funcs()
-    PROTDEF(J, Com_Close, "Close", 0);
-    PROTDEF(J, Com_FlushInput, "FlushInput", 0);
-    PROTDEF(J, Com_FlushOutput, "FlushOutput", 0);
-    PROTDEF(J, Com_IsOutputEmpty, "IsOutputEmpty", 0);
-    PROTDEF(J, Com_IsOutputFull, "IsOutputFull", 0);
-    PROTDEF(J, Com_WriteChar, "WriteChar", 1);
-    PROTDEF(J, Com_Write, "Write", 1);
-    PROTDEF(J, Com_IsInputEmpty, "IsInputEmpty", 0);
-    PROTDEF(J, Com_IsInputFull, "IsInputFull", 0);
-    PROTDEF(J, Com_ReadChar, "ReadChar", 0);
-    PROTDEF(J, Com_ReadBuffer, "ReadBuffer", 0);
-
-    // Set MyObject.prototype = proto
-    duk_put_prop_string(J, -2, "prototype");  // -> stack: [ MyObject ]
-
-    // Finally, register MyObject to the global object
-    duk_put_global_string(J, "COMPort");  // -> stack: [ ]
+    DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
 }
 
 /**
  * @brief shutdown DZComm.
  */
-void shutdown_comport() { dzcomm_closedown(); }
+void shutdown_comport() {
+    DEBUGF("%s\n", __PRETTY_FUNCTION__);
+    dzcomm_closedown();
+    DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
+}

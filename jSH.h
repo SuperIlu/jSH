@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,9 @@ SOFTWARE.
 #ifndef __JSH_H__
 #define __JSH_H__
 
+#include <mujs.h>
 #include <stdbool.h>
 #include <stdio.h>
-
-#include <duktape.h>
 
 /************
 ** defines **
@@ -34,51 +33,53 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.2         //!< version number
-#define JSH_VERSION_STR "V0.2"  //!< version number as string
+#define JSH_VERSION 0.5         //!< version number
+#define JSH_VERSION_STR "V0.5"  //!< version number as string
 
-#define BOOT_DIR "JSBOOT/"  //!< directory with boot files.
+#define JSBOOT_DIR "JSBOOT/"  //!< directory with boot files.
 
 #define LOGFILE "JSLOG.TXT"  //!< filename for logfile
 #define LOGSTREAM logfile    //!< output stream for logging on DOS
 
+#define JS_ENOMEM(j) js_error(j, "Out of memory")   //!< use always the same message when memory runs out
+#define JS_ENOARR(j) js_error(j, "Array expected")  //!< use always the same message when array expected
+
 /***********
 ** macros **
 ***********/
-//! define a global function
-#define FUNCDEF(j, f, n, p)           \
-    {                                 \
-        duk_push_c_function(j, f, p); \
-        duk_put_global_string(j, n);  \
+//! define a new constructor
+#define CTORDEF(j, f, t, p)                \
+    {                                      \
+        js_newcconstructor(J, f, f, t, p); \
+        js_defglobal(J, t, JS_DONTENUM);   \
+    }
+
+//! define a global function (new version)
+#define NFUNCDEF(j, n, p)                 \
+    {                                     \
+        js_newcfunction(j, f_##n, #n, p); \
+        js_setglobal(j, #n);              \
+    }
+
+//! define a method in a class (new version)
+#define NPROTDEF(j, t, n, p)                                                \
+    {                                                                       \
+        js_newcfunction(j, t##_##n, #t ".prototype." #n, p);                \
+        js_defproperty(j, -2, #n, JS_READONLY | JS_DONTENUM | JS_DONTCONF); \
     }
 
 //! define a global property of type number
-#define PROPDEF_N(j, i, n)           \
-    {                                \
-        duk_push_number(j, i);       \
-        duk_put_global_string(j, n); \
+#define PROPDEF_N(j, i, n)  \
+    {                       \
+        js_newnumber(j, i); \
+        js_setglobal(j, n); \
     }
 
 //! define a global property of type boolean
-#define PROPDEF_B(j, i, n)           \
-    {                                \
-        duk_push_boolean(j, i);      \
-        duk_put_global_string(j, n); \
-    }
-
-//! define a method in a class
-#define PROTDEF(j, f, n, p)            \
-    {                                  \
-        duk_push_c_function(j, f, p);  \
-        duk_put_prop_string(j, -2, n); \
-    }
-
-#define NATIVE_PTR(j, p, t)                               \
-    {                                                     \
-        duk_push_this(j);                                 \
-        duk_get_prop_string(j, -1, DUK_HIDDEN_SYMBOL(t)); \
-        p = duk_get_pointer(j, -1);                       \
-        duk_pop(j);                                       \
+#define PROPDEF_B(j, i, n)   \
+    {                        \
+        js_newboolean(j, i); \
+        js_setglobal(j, n);  \
     }
 
 //! printf-style write info to logfile/console
@@ -122,6 +123,11 @@ SOFTWARE.
 #define DEBUG(str)
 #endif
 
+#ifdef GC_BEFORE_MALLOC
+#define NEW_OBJECT_PREP(j) js_gc(j, false)
+#else
+#define NEW_OBJECT_PREP(j)
+#endif
 /*********************
 ** global variables **
 *********************/

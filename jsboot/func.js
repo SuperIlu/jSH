@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,105 @@ SOFTWARE.
 */
 
 /**
- * @property {boolean} DEBUG enable/disable Debug() output.
- */
-DEBUG = false;
+Additional code taken from MDN:
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
+
+Code samples added on or after August 20, 2010 are in the public domain (CC0). 
+No licensing notice is necessary, but if you need one, you can use: 
+"Any copyright is dedicated to the Public Domain. http://creativecommons.org/publicdomain/zero/1.0/".
+*/
 
 /**
- * import a module.
+ * @property {boolean} DEBUG enable/disable Debug() output.
+ */
+DEBUG = true;
+
+/**
+ * @property {string} ZIP_DELIM delimiter between ZIP filename and entry name.
+ */
+ZIP_DELIM = "=";
+
+/**
+ * @property {number} RAW_HDD_FLAG index for HDDs when using raw disk functions.
+ */
+RAW_HDD_FLAG = 0x80;
+
+/**
+ * @property {number} RAW_BLOCKSIZE size of sectors when reading/writing raw disks.
+ */
+RAW_BLOCKSIZE = 512;
+
+/**
+ * try a specific filename which can ba a plain file or a ZIP-file entry. Throws an Exception if the file cant be read.
+ * 
+ * @param {string} name module name.
+ * @param {string} fname the file name to try.
+ * 
+ * @returns the imported module.
+ */
+function RequireFile(name, fname) {
+	var content;
+	if (fname.indexOf(ZIP_DELIM) != -1) {
+		var parts = fname.split(ZIP_DELIM);
+		var zname = parts[0];
+		var ename = parts[1];
+		Debugln("Require(zip) " + zname + " -> " + ename);
+
+		content = ReadZIP(zname, ename);
+	} else {
+		content = Read(fname);
+	}
+	var exports = {};
+	Require._cache[name] = exports;
+	NamedFunction('exports', content, name)(exports);
+	return exports;
+}
+
+/**
+ * import a module. DOjS modules must put all exported symbols into an object called 'exports'.
+ * @example
+ * exports.myVar = 0;               // will be exported
+ * exports.myFunc = function() {};  // will also be exported
+ * var localVar;                    // will only be accessible in the module
+ * function localFunction() {};     // will also only be accessible in the module
  * @param {string} name module file name.
  * @returns the imported module.
  */
 function Require(name) {
 	// look in cache
-	if (name in Require.cache) {
+	if (name in Require._cache) {
 		Debugln("Require(cached) " + name);
-		return Require.cache[name];
+		return Require._cache[name];
 	}
 
-	var names = [name, name + '.JS', 'JSBOOT/' + name, 'JSBOOT/' + name + '.JS'];
+	var names = [
+		name,
+		name + '.js',
+		'jsboot.zip=jsboot/' + name,
+		'jsboot.zip=jsboot/' + name + '.js',
+		'jsboot/' + name,
+		'jsboot/' + name + '.js'
+	];
 	Debugln("Require(names) " + JSON.stringify(names));
 
 	for (var i = 0; i < names.length; i++) {
 		var n = names[i];
 		Debugln("Require() Trying '" + n + "'");
-		var content;
 		try {
-			content = Read(n);
+			return RequireFile(name, n);
 		} catch (e) {
-			Debugln("Require() " + n + " Not found");
+			Debugln("RequireFile() " + n + " Not found" + e);
 			continue;
 		}
-		var exports = {};
-		Require.cache[name] = exports;
-		Function('exports', content)(exports);
-		return exports;
-	};
-
+	}
 
 	throw 'Could not load "' + name + '"';
 }
-Require.cache = Object.create(null);
+Require._cache = Object.create(null);
 
 /**
  * include a module. The exported functions are copied into global scope.
- * 
+ * @see {@link Require}
  * @param {string} name module file name.
  */
 function Include(name) {
@@ -86,10 +142,12 @@ Error.prototype.toString = function () {
  * print startup info with screen details.
  */
 function StartupInfo() {
-	if (Debugln) {
-		Debugln("Memory=" + JSON.stringify(MemoryInfo()));
-
-		Debugln("Parameters=" + JSON.stringify(args));
+	if (DEBUG) {
+		Debugln("Memory: " + JSON.stringify(MemoryInfo()));
+		Debugln("Command line args: " + JSON.stringify(args));
+		Debugln("SerialPorts: " + JSON.stringify(GetSerialPorts().map(function (e) { return "0x" + e.toString(16) })));
+		Debugln("ParallelPorts: " + JSON.stringify(GetParallelPorts().map(function (e) { return "0x" + e.toString(16) })));
+		Debugln("FDD: " + GetNumberOfFDD() + ", HDD: " + GetNumberOfHDD());
 
 		var funcs = [];
 		var other = [];
@@ -112,6 +170,308 @@ function StartupInfo() {
 		}
 	}
 }
+
+/**
+ * get char code.
+ * 
+ * @param {string} s a string
+ * @returns the ASCII-code of the first character.
+ */
+function CharCode(s) {
+	return s.charCodeAt(0);
+}
+
+/**
+ * get random integer between min and max (or between 0 and min if max is not provided).
+ * 
+ * @param {number} min min
+ * @param {number} max max
+ * 
+ * @returns {number} an integer between min and max.
+ */
+function RandomInt(min, max) {
+	if (max === undefined) {
+		max = min;
+		min = 0;
+	}
+
+	return Math.floor(Math.random() * (max - min) + min);
+}
+
+// add startsWith() endsWith() to String class
+if (!String.prototype.startsWith) {
+	Object.defineProperty(String.prototype, 'startsWith', {
+		value: function (search, rawPos) {
+			var pos = rawPos > 0 ? rawPos | 0 : 0;
+			return this.substring(pos, pos + search.length) === search;
+		}
+	});
+}
+if (!String.prototype.endsWith) {
+	String.prototype.endsWith = function (search, this_len) {
+		if (this_len === undefined || this_len > this.length) {
+			this_len = this.length;
+		}
+		return this.substring(this_len - search.length, this_len) === search;
+	};
+}
+
+/**
+ * create stop watch for benchmarking
+ */
+function StopWatch() {
+	this.Reset();
+};
+/**
+ * start stopwatch.
+ */
+StopWatch.prototype.Start = function () {
+	this.start = MsecTime();
+	this.stop = null;
+};
+/**
+ * stop stopwatch.
+ */
+StopWatch.prototype.Stop = function () {
+	this.stop = MsecTime();
+	if (!this.start) {
+		this.Reset();
+		throw "StopWatch.Stop() called before StopWatch.Start()!"
+	}
+};
+/**
+ * reset stopwatch.
+ */
+StopWatch.prototype.Reset = function () {
+	this.start = null;
+	this.stop = null;
+};
+/**
+ * get runtime in ms.
+ * @returns {number} runtime in ms.
+ */
+StopWatch.prototype.ResultMs = function () {
+	if (!this.start || !this.stop) {
+		throw "start or end time missing!";
+	}
+	return this.stop - this.start;
+};
+/**
+* convert result to a readable string.
+* 
+* @param {string} [name] name of the measured value.
+*
+* @returns {string} a string describing the runtime.
+*/
+StopWatch.prototype.Result = function (name) {
+	var total = this.ResultMs();
+
+	var ret = "Runtime is ";
+	if (name) {
+		ret = "Runtime for '" + name + "' is ";
+	}
+
+
+	var msecs = Math.floor(total % 1000);
+	var secs = Math.floor((total / 1000) % 60);
+	var mins = Math.floor((total / 1000 / 60));
+
+	if (mins) {
+		ret += mins + "m ";
+	}
+	if (secs) {
+		ret += secs + "s ";
+	}
+	ret += msecs + "ms";
+
+	return ret;
+};
+/**
+ * print result as a readable string.
+ * 
+ * @param {string} [name] name of the measured value.
+ */
+StopWatch.prototype.Print = function (name) {
+	Println(this.Result(name));
+};
+
+/**
+ * Write the given value to io-port 80h to be displayed by a POST card.
+ * 
+ * @param {number} val value to write to 0x80.
+ */
+function POST(val) {
+	OutPortByte(0x80, val);
+}
+
+/*
+see:
+https://en.wikipedia.org/wiki/Parallel_port
+http://electrosofts.com/parallel/
+https://web.archive.org/web/20120301022928/http://retired.beyondlogic.org/spp/parallel.pdf
+https://stanislavs.org/helppc/bios_data_area.html
+*/
+
+var _lptPorts = GetParallelPorts();
+
+/**
+ * read/write data to LPT data register.
+ * 
+ * @param {number} port port number (0-3).
+ * @param {number} data data to write, null to read
+ * 
+ * @returns {number} current LPT value if data was null.
+ * 
+ * @see GetParallelPorts
+ */
+function LPTRawData(port, data) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	var addr = _lptPorts[port];
+
+	var old = InPortByte(addr + PARALLEL.CONTROL.ADDR);
+	if (data) {
+		OutPortByte(addr + PARALLEL.CONTROL.ADDR, old & ~PARALLEL.CONTROL.BIDI);
+
+		OutPortByte(addr + PARALLEL.DATA.ADDR, data);
+	} else {
+		OutPortByte(addr + PARALLEL.CONTROL.ADDR, old | PARALLEL.CONTROL.BIDI);
+
+		return InPortByte(addr + PARALLEL.DATA.ADDR);
+	}
+}
+
+/**
+ * read status register of LPT port.
+ * 
+ * @param {number} port port number (0-3).
+ * 
+ * @see GetParallelPorts
+ */
+function LPTRawStatus(port) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	var addr = _lptPorts[port];
+
+	return InPortByte(addr + PARALLEL.STATUS.ADDR);
+}
+
+/**
+ * write bits to LPT control register.
+ * 
+ * @param {number} port port number (0-3).
+ * @param {number} bits data to write
+ * 
+ * @see GetParallelPorts
+ */
+function LPTRawControl(port, bits) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	var addr = _lptPorts[port];
+
+	OutPortByte(addr + PARALLEL.CONTROL.ADDR, bits);
+}
+
+/**
+ * reset parallel port.
+ * @param {number} port port number (0-3).
+ * 
+ * @see GetParallelPorts
+ */
+function LPTReset(port) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	_LPTReset(port);
+}
+
+/**
+ * send data to parallel port.
+ * @param {number} port port number (0-3).
+ * @param {string} data data to transfer.
+ * 
+ * @see GetParallelPorts
+ */
+function LPTSend(port, data) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	_LPTSend(port, data);
+}
+
+/**
+ * read parallel port status.
+ * @param {number} port port number (0-3).
+ * 
+ * @see GetParallelPorts
+ */
+function LPTStatus(port) {
+	if (port < 0 && ports >= _lptPorts.length) {
+		throw 'LPT port out of range';
+	}
+	return _LPTStatus(port);
+}
+
+/**
+ * parallel port IO register definitions.
+ * 
+ *  [*] CONTROL.BIDI must be set to 1 in order to read from DATA. Not supported by all ports!
+ * 
+ * @property {*} DATA.BIT0 Data 0, pin 2 (out/in*)
+ * @property {*} DATA.BIT1 Data 1, pin 3 (out/in*)
+ * @property {*} DATA.BIT2 Data 2, pin 4 (out/in*)
+ * @property {*} DATA.BIT3 Data 3, pin 5 (out/in*)
+ * @property {*} DATA.BIT4 Data 4, pin 6 (out/in*)
+ * @property {*} DATA.BIT5 Data 5, pin 7 (out/in*)
+ * @property {*} DATA.BIT6 Data 6, pin 8 (out/in*)
+ * @property {*} DATA.BIT7 Data 7, pin 9 (out/in*)
+ * 
+ * @property {*} STATUS.BUSY pin 11, inverted (in)
+ * @property {*} STATUS.ACK pin 10 (in)
+ * @property {*} STATUS.PAPER_OUT pin 12 (in)
+ * @property {*} STATUS.SELECT_IN pin 13 (in)
+ * @property {*} STATUS.ERROR pin 15 (in)
+ * @property {*} STATUS.TIMEOUT LPTStatus() only
+ * 
+ * @property {*} CONTROL.BIDI this bit must be set in order to read DATA
+ * @property {*} CONTROL.SELECT_OUT pin 17, inverted (out)
+ * @property {*} CONTROL.RESET pin 16 (out)
+ * @property {*} CONTROL.LINEFEED pin 14, inverted (out)
+ * @property {*} CONTROL.STROBE pin 1, inverted (out)
+ */
+PARALLEL = {
+	DATA: {
+		ADDR: 0,
+		BIT0: (1 << 0),
+		BIT1: (1 << 1),
+		BIT2: (1 << 2),
+		BIT3: (1 << 3),
+		BIT4: (1 << 4),
+		BIT5: (1 << 5),
+		BIT6: (1 << 6),
+		BIT7: (1 << 7)
+	},
+	STATUS: {
+		ADDR: 1,
+		BUSY: (1 << 7),
+		ACK: (1 << 6),
+		PAPER_OUT: (1 << 5),
+		SELECT_IN: (1 << 4),
+		ERROR: (1 << 3),
+		TIMEOUT: (1 << 1)
+	},
+	CONTROL: {
+		ADDR: 2,
+		BIDI: (1 << 5),
+		SELECT_OUT: (1 << 3),
+		RESET: (1 << 2),
+		LINEFEED: (1 << 1),
+		STROBE: (1 << 0)
+	}
+};
 
 var ULCORNER = AsciiCharDef(218);
 var URCORNER = AsciiCharDef(191);

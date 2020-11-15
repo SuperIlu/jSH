@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,17 @@ SOFTWARE.
 #ifndef __CONIO_H__
 #define __CONIO_H__
 
-#include <duktape.h>
+#include <mujs.h>
 #include "jSH.h"
+
+/************
+** defines **
+************/
+//#define JSINC_FUNC BOOT_DIR "func.js"  //!< boot script for grx subsystem
 
 /***********************
 ** exported functions **
 ***********************/
-extern void init_conio(duk_context *J);
+extern void init_conio(js_State *J);
 
 #endif  // __CONIO_H__

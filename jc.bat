@@ -1,3 +1,3 @@
 @echo off
 
-jsh.exe jc.js
+jsh.exe scripts/jc.js

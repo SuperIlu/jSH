@@ -45,9 +45,9 @@
 
 #define DZ_PRINTFUNC(type, name, args, a, b) DZ_FUNC(type, name, args) __attribute__((format(printf, a, b)))
 
-#define CONSTRUCTOR_FUNCTION(func) func __attribute__((constructor))
+//#define CONSTRUCTOR_FUNCTION(func) func __attribute__((constructor))
 
-#define INLINE inline
+//#define INLINE inline
 
 #ifndef ZERO_SIZE
 #define ZERO_SIZE 0
@@ -102,15 +102,15 @@
 #endif
 
 /* fill in default memory locking macros */
-#ifndef END_OF_FUNCTION
-#define END_OF_FUNCTION(x)
-#define END_OF_STATIC_FUNCTION(x)
-#define LOCK_DATA(d, s)
-#define LOCK_CODE(c, s)
-#define UNLOCK_DATA(d, s)
-#define LOCK_VARIABLE(x)
-#define LOCK_FUNCTION(x)
-#endif
+// #ifndef END_OF_FUNCTION
+// #define END_OF_FUNCTION(x)
+// #define END_OF_STATIC_FUNCTION(x)
+// #define LOCK_DATA(d, s)
+// #define LOCK_CODE(c, s)
+// #define UNLOCK_DATA(d, s)
+// #define LOCK_VARIABLE(x)
+// #define LOCK_FUNCTION(x)
+// #endif
 
 /* emulate the FA_* flags for platforms that don't already have them */
 #ifndef FA_RDONLY

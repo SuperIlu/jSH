@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,17 @@ SOFTWARE.
 #ifndef __FILE_H__
 #define __FILE_H__
 
-#include <duktape.h>
 #include "jSH.h"
 
 /************
 ** defines **
 ************/
-#define JSINC_FILE BOOT_DIR "file.js"  //!< boot script for file subsystem
-#define TAG_FILE "File"                //!< class name for File()
+#define JSINC_FILE JSBOOT_DIR "file.js"  //!< boot script for file subsystem
+#define TAG_FILE "File"                  //!< class name for File()
 
 /***********************
 ** exported functions **
 ***********************/
-extern void init_file(duk_context *J);
+extern void init_file(js_State *J);
 
 #endif  // __FILE_H__

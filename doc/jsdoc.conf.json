@@ -5,12 +5,30 @@
 			"objects.js",
 			"classes.js",
 			"conio.js",
+			"../jsboot/socket.js",
 			"../jsboot/func.js",
 			"../jsboot/file.js"
 		],
 		"excludePattern": ""
 	},
 	"opts": {
-		"template": "/usr/local/lib/node_modules/tui-jsdoc-template"
+		"readme": "../README.md",
+		"search": true,
+		"template": "/usr/local/lib/node_modules/better-docs"
+	},
+	"templates": {
+		"default": {
+			"outputSourceFiles": false
+		},
+		"better-docs": {
+			"name": "jSH V0.5",
+			"hideGenerator": true,
+			"navLinks": [
+				{
+					"label": "Github",
+					"href": "https://github.com/SuperIlu/jSH"
+				}
+			]
+		}
 	}
 }

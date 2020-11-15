@@ -45,10 +45,12 @@ DZ_FUNC(int,  _install_irq, (int num, DZ_METHOD(int, handler, (void))));
 DZ_FUNC(void, _remove_irq,  (int num));
 #endif /* !AINTERN_H */
 
+int  _dzdos_install_irq(int num, int (*handler)());
 int  _dzdos_install_irq(int num, int (*handler)()) {
    return _install_irq(num, handler);
 }
 
+void _dzdos_remove_irq(int num);
 void _dzdos_remove_irq(int num) {
    _remove_irq(num);
 }
@@ -57,6 +59,7 @@ void _dzdos_remove_irq(int num) {
 DZ_VAR(int, _dzdos_timer_installed);
 AL_VAR(int, _timer_installed);
 
+int dzdos_install_timer(void);
 int dzdos_install_timer(void) {
    int rv = install_timer();
    if (_timer_installed) _dzdos_timer_installed = TRUE;
@@ -64,10 +67,12 @@ int dzdos_install_timer(void) {
    return rv;
 }
 
+int dzdos_install_param_int(void (*proc)(void *param), void *param, long speed);
 int dzdos_install_param_int(void (*proc)(void *param), void *param, long speed) {
    return install_param_int(proc, param, speed);
 }
 
+void dzdos_remove_param_int(void (*proc)(void *param), void *param);
 void dzdos_remove_param_int(void (*proc)(void *param), void *param) {
    remove_param_int(proc, param);
 }

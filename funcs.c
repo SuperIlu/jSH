@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,11 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 #include <dirent.h>
 #include <dos.h>
 #include <dpmi.h>
-#include <duktape.h>
 #include <errno.h>
+#include <mujs.h>
 #include <pc.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +32,14 @@ SOFTWARE.
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include "zipfile.h"
 
 #include "funcs.h"
 #include "jSH.h"
+
+#include "jsi.h"
+#include "jsparse.h"
+#include "jscompile.h"
 
 /*********************
 ** static functions **
@@ -44,52 +50,77 @@ SOFTWARE.
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Read(duk_context *J) {
-    const char *fname = duk_require_string(J, 0);
+static void f_Read(js_State *J) {
+    const char *fname = js_tostring(J, 1);
     FILE *f;
     char *s;
     int n, t;
 
     f = fopen(fname, "rb");
     if (!f) {
-        return duk_generic_error(J, "Can't open file '%s': %s", fname, strerror(errno));
+        js_error(J, "Can't open file '%s': %s", fname, strerror(errno));
+        return;
     }
 
     if (fseek(f, 0, SEEK_END) < 0) {
         fclose(f);
-        return duk_generic_error(J, "Can't seek in file '%s': %s", fname, strerror(errno));
+        js_error(J, "Can't seek in file '%s': %s", fname, strerror(errno));
+        return;
     }
 
     n = ftell(f);
     if (n < 0) {
         fclose(f);
-        return duk_generic_error(J, "Can't tell in file '%s': %s", fname, strerror(errno));
+        js_error(J, "Can't tell in file '%s': %s", fname, strerror(errno));
+        return;
     }
 
     if (fseek(f, 0, SEEK_SET) < 0) {
         fclose(f);
-        return duk_generic_error(J, "Can't seek in file '%s': %s", fname, strerror(errno));
+        js_error(J, "Can't seek in file '%s': %s", fname, strerror(errno));
+        return;
     }
 
     s = malloc(n + 1);
     if (!s) {
         fclose(f);
-        return duk_generic_error(J, "out of memory");
+        js_error(J, "out of memory");
+        return;
     }
 
     t = fread(s, 1, n, f);
     if (t != n) {
         free(s);
         fclose(f);
-        return duk_generic_error(J, "Can't read data from file '%s': %s", fname, strerror(errno));
+        js_error(J, "Can't read data from file '%s': %s", fname, strerror(errno));
+        return;
     }
     s[n] = 0;
 
-    duk_push_string(J, s);
+    js_pushstring(J, s);
     free(s);
     fclose(f);
+}
 
-    return 1;
+/**
+ * @brief read a whole file as string.
+ * Read(fname:string, entry_name:string):string
+ *
+ * @param J the JS context.
+ */
+static void f_ReadZIP(js_State *J) {
+    const char *zname = js_tostring(J, 1);
+    const char *ename = js_tostring(J, 2);
+
+    char *buf = NULL;
+    size_t esize;
+    if (read_zipfile2(zname, ename, (void **)&buf, &esize)) {
+        js_pushstring(J, buf);
+        free(buf);
+    } else {
+        js_error(J, "Can't open ZIP '%s' = '%s'", zname, ename);
+        return;
+    }
 }
 
 /**
@@ -98,24 +129,24 @@ static duk_ret_t f_Read(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_List(duk_context *J) {
-    const char *dirname = duk_require_string(J, 0);
+static void f_List(js_State *J) {
+    const char *dirname = js_tostring(J, 1);
     DIR *dir = opendir(dirname);
     if (!dir) {
-        return duk_generic_error(J, "Cannot open dir '%s': %s", dirname, strerror(errno));
+        js_error(J, "Cannot open dir '%s': %s", dirname, strerror(errno));
+        return;
     }
 
     struct dirent *de;
-    duk_idx_t arr = duk_push_array(J);
+    js_newarray(J);
     int idx = 0;
     while ((de = readdir(dir)) != NULL) {
-        duk_push_string(J, de->d_name);
-        duk_put_prop_index(J, arr, idx);
+        js_pushstring(J, de->d_name);
+        js_setindex(J, -2, idx);
         idx++;
     }
 
     closedir(dir);
-    return 1;
 }
 
 /**
@@ -138,45 +169,44 @@ static char *f_formatTime(time_t *t) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Stat(duk_context *J) {
-    const char *name = duk_require_string(J, 0);
+static void f_Stat(js_State *J) {
+    const char *name = js_tostring(J, 1);
 
     struct stat s;
     if (stat(name, &s) != 0) {
-        return duk_generic_error(J, "Cannot stat '%s': %s", name, strerror(errno));
+        js_error(J, "Cannot stat '%s': %s", name, strerror(errno));
+        return;
     }
 
     char *drive = "A:";
     drive[0] += s.st_dev;
 
-    duk_idx_t obj = duk_push_object(J);
+    js_newobject(J);
     {
-        duk_push_string(J, drive);
-        duk_put_prop_string(J, obj, "drive");
-        duk_push_string(J, f_formatTime(&s.st_atime));
-        duk_put_prop_string(J, obj, "atime");
-        duk_push_string(J, f_formatTime(&s.st_ctime));
-        duk_put_prop_string(J, obj, "ctime");
-        duk_push_string(J, f_formatTime(&s.st_mtime));
-        duk_put_prop_string(J, obj, "mtime");
-        duk_push_int(J, s.st_size);
-        duk_put_prop_string(J, obj, "size");
-        duk_push_int(J, s.st_blksize);
-        duk_put_prop_string(J, obj, "blksize");
-        duk_push_int(J, s.st_nlink);
-        duk_put_prop_string(J, obj, "nlink");
+        js_pushstring(J, drive);
+        js_setproperty(J, -2, "drive");
+        js_pushstring(J, f_formatTime(&s.st_atime));
+        js_setproperty(J, -2, "atime");
+        js_pushstring(J, f_formatTime(&s.st_ctime));
+        js_setproperty(J, -2, "ctime");
+        js_pushstring(J, f_formatTime(&s.st_mtime));
+        js_setproperty(J, -2, "mtime");
+        js_pushnumber(J, s.st_size);
+        js_setproperty(J, -2, "size");
+        js_pushnumber(J, s.st_blksize);
+        js_setproperty(J, -2, "blksize");
+        js_pushnumber(J, s.st_nlink);
+        js_setproperty(J, -2, "nlink");
 
-        duk_push_boolean(J, S_ISREG(s.st_mode));
-        duk_put_prop_string(J, obj, "is_regular");
-        duk_push_boolean(J, S_ISDIR(s.st_mode));
-        duk_put_prop_string(J, obj, "is_directory");
-        duk_push_boolean(J, S_ISCHR(s.st_mode));
-        duk_put_prop_string(J, obj, "is_chardev");
-        duk_push_boolean(J, S_ISBLK(s.st_mode));
-        duk_put_prop_string(J, obj, "is_blockdev");
+        js_pushboolean(J, S_ISREG(s.st_mode));
+        js_setproperty(J, -2, "is_regular");
+        js_pushboolean(J, S_ISDIR(s.st_mode));
+        js_setproperty(J, -2, "is_directory");
+        js_pushboolean(J, S_ISCHR(s.st_mode));
+        js_setproperty(J, -2, "is_chardev");
+        js_pushboolean(J, S_ISBLK(s.st_mode));
+        js_setproperty(J, -2, "is_blockdev");
     }
-
-    return 1;
 }
 
 /**
@@ -185,20 +215,23 @@ static duk_ret_t f_Stat(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Debugln(duk_context *J) {
-    duk_get_global_string(J, "DEBUG");
-    bool dbg = duk_require_boolean(J, -1);
-    duk_pop(J);
+static void f_Debugln(js_State *J) {
+    js_getglobal(J, "DEBUG");
+    bool dbg = js_toboolean(J, -1);
+    js_pop(J, 1);
 
     if (dbg) {
-        duk_push_string(J, " ");
-        duk_insert(J, 0);
-        duk_join(J, duk_get_top(J) - 1);
-        fputs(duk_to_string(J, -1), LOGSTREAM);
-        fflush(LOGSTREAM);
+        int i, top = js_gettop(J);
+        for (i = 1; i < top; ++i) {
+            const char *s = js_tostring(J, i);
+            if (i > 1) {
+                putc(' ', LOGSTREAM);
+            }
+            fputs(s, LOGSTREAM);
+        }
         putc('\n', LOGSTREAM);
     }
-    return 0;
+    js_pushundefined(J);
 }
 
 /**
@@ -207,19 +240,22 @@ static duk_ret_t f_Debugln(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Debug(duk_context *J) {
-    duk_get_global_string(J, "DEBUG");
-    bool dbg = duk_require_boolean(J, -1);
-    duk_pop(J);
+static void f_Debug(js_State *J) {
+    js_getglobal(J, "DEBUG");
+    bool dbg = js_toboolean(J, -1);
+    js_pop(J, 1);
 
     if (dbg) {
-        duk_push_string(J, " ");
-        duk_insert(J, 0);
-        duk_join(J, duk_get_top(J) - 1);
-        fputs(duk_to_string(J, -1), LOGSTREAM);
-        fflush(LOGSTREAM);
+        int i, top = js_gettop(J);
+        for (i = 1; i < top; ++i) {
+            const char *s = js_tostring(J, i);
+            if (i > 1) {
+                putc(' ', LOGSTREAM);
+            }
+            fputs(s, LOGSTREAM);
+        }
     }
-    return 0;
+    js_pushundefined(J);
 }
 
 /**
@@ -228,14 +264,18 @@ static duk_ret_t f_Debug(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Println(duk_context *J) {
-    duk_push_string(J, " ");
-    duk_insert(J, 0);
-    duk_join(J, duk_get_top(J) - 1);
-    fputs(duk_to_string(J, -1), stdout);
+static void f_Println(js_State *J) {
+    int i, top = js_gettop(J);
+    for (i = 1; i < top; ++i) {
+        const char *s = js_tostring(J, i);
+        if (i > 1) {
+            putc(' ', stdout);
+        }
+        fputs(s, stdout);
+    }
     putc('\n', stdout);
     fflush(stdout);
-    return 0;
+    js_pushundefined(J);
 }
 
 /**
@@ -244,13 +284,17 @@ static duk_ret_t f_Println(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Print(duk_context *J) {
-    duk_push_string(J, " ");
-    duk_insert(J, 0);
-    duk_join(J, duk_get_top(J) - 1);
-    fputs(duk_to_string(J, -1), stdout);
-    fflush(stdout);
-    return 0;
+static void f_Print(js_State *J) {
+    int i, top = js_gettop(J);
+    for (i = 1; i < top; ++i) {
+        const char *s = js_tostring(J, i);
+        if (i > 1) {
+            putc(' ', stdout);
+        }
+        fputs(s, stdout);
+        fflush(stdout);
+    }
+    js_pushundefined(J);
 }
 
 /**
@@ -259,10 +303,7 @@ static duk_ret_t f_Print(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Quit(duk_context *J) {
-    exit(0);
-    return 0;
-}
+static void f_Quit(js_State *J) { exit(0); }
 
 /**
  * @brief do garbage collection.
@@ -270,10 +311,9 @@ static duk_ret_t f_Quit(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Gc(duk_context *J) {
-    bool compact = duk_get_boolean(J, 0);
-    duk_gc(J, compact ? DUK_GC_COMPACT : 0);
-    return 0;
+static void f_Gc(js_State *J) {
+    bool report = js_toboolean(J, 1);
+    js_gc(J, report);
 }
 
 /**
@@ -282,19 +322,18 @@ static duk_ret_t f_Gc(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_MemoryInfo(duk_context *J) {
+static void f_MemoryInfo(js_State *J) {
     _go32_dpmi_meminfo info;
 
-    duk_idx_t obj = duk_push_object(J);
+    js_newobject(J);
     {
         if ((_go32_dpmi_get_free_memory_information(&info) == 0) && (info.total_physical_pages != -1)) {
-            duk_push_int(J, info.total_physical_pages * 4096);
-            duk_put_prop_string(J, obj, "total");
-            duk_push_int(J, _go32_dpmi_remaining_physical_memory());
-            duk_put_prop_string(J, obj, "remaining");
+            js_pushnumber(J, info.total_physical_pages * 4096);
+            js_setproperty(J, -2, "total");
+            js_pushnumber(J, _go32_dpmi_remaining_physical_memory());
+            js_setproperty(J, -2, "remaining");
         }
     }
-    return 1;
 }
 
 /**
@@ -303,193 +342,262 @@ static duk_ret_t f_MemoryInfo(duk_context *J) {
  *
  * @param J the JS context.
  */
-static duk_ret_t f_Sleep(duk_context *J) {
-    sleep(duk_require_int(J, 0));
-    return 0;
-}
+static void f_Sleep(js_State *J) { sleep(js_toint32(J, 1)); }
 
-static duk_ret_t f_RmFile(duk_context *J) {
-    const char *file = duk_require_string(J, 0);
+static void f_RmFile(js_State *J) {
+    const char *file = js_tostring(J, 1);
 
     if (!file) {
-        return duk_generic_error(J, "No filename");
+        js_error(J, "No filename");
     }
 
     int ret = unlink(file);
     if (ret != 0) {
-        return duk_generic_error(J, "Could not delete file: %s", strerror(errno));
+        js_error(J, "Could not delete file: %s", strerror(errno));
     }
-    return 0;
 }
 
-static duk_ret_t f_RmDir(duk_context *J) {
-    const char *dir = duk_require_string(J, 0);
+static void f_RmDir(js_State *J) {
+    const char *dir = js_tostring(J, 1);
 
     if (!dir) {
-        return duk_generic_error(J, "No dirname");
+        js_error(J, "No dirname");
     }
 
     int ret = rmdir(dir);
     if (ret != 0) {
-        return duk_generic_error(J, "Could not delete directory: %s", strerror(errno));
+        js_error(J, "Could not delete directory: %s", strerror(errno));
     }
-    return 0;
 }
 
-static duk_ret_t f_MakeDir(duk_context *J) {
-    const char *dir = duk_require_string(J, 0);
+static void f_MakeDir(js_State *J) {
+    const char *dir = js_tostring(J, 1);
 
     if (!dir) {
-        return duk_generic_error(J, "No dirname");
+        js_error(J, "No dirname");
     }
 
     int ret = mkdir(dir, 0);
     if (ret != 0) {
-        return duk_generic_error(J, "Could not create directory: %s", strerror(errno));
+        js_error(J, "Could not create directory: %s", strerror(errno));
     }
-    return 0;
 }
 
-static duk_ret_t f_Rename(duk_context *J) {
-    const char *from = duk_require_string(J, 0);
-    const char *to = duk_require_string(J, 1);
+static void f_Rename(js_State *J) {
+    const char *from = js_tostring(J, 1);
+    const char *to = js_tostring(J, 2);
 
     if (!from) {
-        return duk_generic_error(J, "No source filename");
+        js_error(J, "No source filename");
     }
 
     if (!to) {
-        return duk_generic_error(J, "No destination filename");
+        js_error(J, "No destination filename");
     }
 
     int ret = rename(from, to);
     if (ret != 0) {
-        return duk_generic_error(J, "Could not rename file: %s", strerror(errno));
+        js_error(J, "Could not rename file: %s", strerror(errno));
     }
-    return 0;
 }
 
-static duk_ret_t f_System(duk_context *J) {
-    const char *cmd = duk_require_string(J, 0);
+static void f_System(js_State *J) {
+    const char *cmd = js_tostring(J, 1);
 
     int ret = system(cmd);
 
-    duk_push_int(J, ret);
-    return 1;
+    js_pushnumber(J, ret);
 }
 
-static duk_ret_t f_Sound(duk_context *J) {
-    sound(duk_require_int(J, 0));
-    return 0;
-}
+static void f_Sound(js_State *J) { sound(js_toint32(J, 1)); }
 
-static duk_ret_t f_NoSound(duk_context *J) {
-    nosound();
-    return 0;
-}
+static void f_NoSound(js_State *J) { nosound(); }
 
-static duk_ret_t f_FreeSpace(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_FreeSpace(js_State *J) {
+    int dr = js_toint16(J, 1);
     struct dfree d;
     getdfree(dr, &d);
 
-    duk_idx_t obj = duk_push_object(J);
+    js_newobject(J);
     {
-        duk_push_int(J, d.df_avail);
-        duk_put_prop_string(J, obj, "availClusters");
-        duk_push_int(J, d.df_total);
-        duk_put_prop_string(J, obj, "totalClusters");
-        duk_push_int(J, d.df_bsec);
-        duk_put_prop_string(J, obj, "bytesPerSector");
-        duk_push_int(J, d.df_sclus);
-        duk_put_prop_string(J, obj, "bytesPerCluster");
+        js_pushnumber(J, d.df_avail);
+        js_setproperty(J, -2, "availClusters");
+        js_pushnumber(J, d.df_total);
+        js_setproperty(J, -2, "totalClusters");
+        js_pushnumber(J, d.df_bsec);
+        js_setproperty(J, -2, "bytesPerSector");
+        js_pushnumber(J, d.df_sclus);
+        js_setproperty(J, -2, "bytesPerCluster");
     }
-    return 1;
 }
 
-static duk_ret_t f_IsFixed(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_IsFixed(js_State *J) {
+    int dr = js_toint16(J, 1);
 
     int type = _media_type(dr);
 
     switch (type) {
         case 1:
-            duk_push_boolean(J, true);
+            js_pushboolean(J, true);
             break;
         case 0:
-            duk_push_boolean(J, false);
+            js_pushboolean(J, false);
             break;
         default:
-            return duk_generic_error(J, "Can't determine drive type.");
+            js_error(J, "Can't determine drive type.");
+            break;
     }
-    return 1;
 }
 
-static duk_ret_t f_IsCDROM(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_IsCDROM(js_State *J) {
+    int dr = js_toint16(J, 1);
 
     int type = _is_cdrom_drive(dr);
 
     switch (type) {
         case 1:
-            duk_push_boolean(J, true);
+            js_pushboolean(J, true);
             break;
         case 0:
-            duk_push_boolean(J, false);
+            js_pushboolean(J, false);
             break;
         default:
-            return duk_generic_error(J, "Can't determine drive type.");
+            js_error(J, "Can't determine drive type.");
+            break;
     }
-    return 1;
 }
 
-static duk_ret_t f_IsFAT32(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_IsFAT32(js_State *J) {
+    int dr = js_toint16(J, 1);
 
     int type = _is_fat32(dr);
 
     switch (type) {
         case 1:
-            duk_push_boolean(J, true);
+            js_pushboolean(J, true);
             break;
         case 0:
-            duk_push_boolean(J, false);
+            js_pushboolean(J, false);
             break;
         default:
-            return duk_generic_error(J, "Can't determine drive type.");
+            js_error(J, "Can't determine drive type.");
+            break;
     }
-    return 1;
 }
 
-static duk_ret_t f_IsRAMDisk(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_IsRAMDisk(js_State *J) {
+    int dr = js_toint16(J, 1);
 
     int type = _is_ram_drive(dr);
 
     switch (type) {
         case 1:
-            duk_push_boolean(J, true);
+            js_pushboolean(J, true);
             break;
         case 0:
-            duk_push_boolean(J, false);
+            js_pushboolean(J, false);
             break;
         default:
-            return duk_generic_error(J, "Can't determine drive type.");
+            js_error(J, "Can't determine drive type.");
+            break;
     }
-    return 1;
 }
 
-static duk_ret_t f_GetFSType(duk_context *J) {
-    int dr = duk_require_int(J, 0);
+static void f_GetFSType(js_State *J) {
+    int dr = js_toint16(J, 1);
 
     char buffer[9];
 
     if (!_get_fs_type(dr, buffer)) {
-        duk_push_string(J, buffer);
+        js_pushstring(J, buffer);
     } else {
-        return duk_generic_error(J, "Can't determine fs type.");
+        js_error(J, "Can't determine fs type.");
     }
-    return 1;
+}
+
+/**
+ * convert byte array to string.
+ * BytesToString(data:number[]):string
+ *
+ * @param J VM state.
+ */
+static void f_BytesToString(js_State *J) {
+    if (js_isarray(J, 1)) {
+        int len = js_getlength(J, 1);
+
+        char *data = malloc(len + 1);
+        if (!data) {
+            JS_ENOMEM(J);
+            return;
+        }
+
+        for (int i = 0; i < len; i++) {
+            js_getindex(J, 1, i);
+            data[i] = (char)js_toint16(J, -1);
+            js_pop(J, 1);
+        }
+        data[len] = 0;
+        js_pushstring(J, data);
+
+        free(data);
+    } else {
+        JS_ENOARR(J);
+    }
+}
+
+/**
+ * convert string to byte array.
+ * StringToBytes(string):number[]
+ *
+ * @param J VM state.
+ */
+static void f_StringToBytes(js_State *J) {
+    const char *data = js_tostring(J, 1);
+    js_newarray(J);
+
+    int idx = 0;
+    while (data[idx]) {
+        js_pushnumber(J, data[idx]);
+        js_setindex(J, -2, idx);
+        idx++;
+    }
+}
+
+/**
+ * @brief parse string and run it as function.
+ * This works like Function(), but it only takes one parameter and the source of the parsed string can be provided.
+ * NamedFunction(func_param, func_src, func_source_filename):function
+ *
+ * @param J
+ */
+static void f_NamedFunction(js_State *J) {
+    js_Buffer *sb = NULL;
+    const char *body, *fname;
+    js_Ast *parse;
+    js_Function *fun;
+
+    if (js_try(J)) {
+        js_free(J, sb);
+        jsP_freeparse(J);
+        js_throw(J);
+    }
+
+    js_puts(J, &sb, js_tostring(J, 1));
+    js_putc(J, &sb, ')');
+    js_putc(J, &sb, 0);
+
+    /* body */
+    body = js_isdefined(J, 2) ? js_tostring(J, 2) : "";
+    fname = js_isdefined(J, 3) ? js_tostring(J, 3) : "[string]";
+
+    parse = jsP_parsefunction(J, fname, sb ? sb->s : NULL, body);
+    fun = jsC_compilefunction(J, parse);
+
+    js_endtry(J);
+    js_free(J, sb);
+    jsP_freeparse(J);
+
+    js_newfunction(J, fun, J->GE);
 }
 
 /***********************
@@ -500,49 +608,53 @@ static duk_ret_t f_GetFSType(duk_context *J) {
  *
  * @param J VM state.
  */
-void init_funcs(duk_context *J, int argc, char *argv[], int idx) {
+void init_funcs(js_State *J, int argc, char *argv[], int idx) {
     // define some global properties
-    duk_push_global_object(J);
-    duk_put_global_string(J, "global");
+    js_pushglobal(J);
+    js_setglobal(J, "global");
 
     PROPDEF_N(J, JSH_VERSION, "JSH_VERSION");
 
     // push script args into an array and set it as global args variable
-    duk_idx_t arr = duk_push_array(J);
+    js_newarray(J);
     unsigned int i = 0;
     while (idx < argc) {
-        duk_push_string(J, argv[idx++]);
-        duk_put_prop_index(J, arr, i++);
+        js_pushstring(J, argv[idx++]);
+        js_setindex(J, -2, i++);
     }
-    duk_put_global_string(J, "args");
+    js_setglobal(J, "args");
 
     // define global functions
-    FUNCDEF(J, f_Print, "Print", DUK_VARARGS);
-    FUNCDEF(J, f_Println, "Println", DUK_VARARGS);
-    FUNCDEF(J, f_Debug, "Debug", DUK_VARARGS);
-    FUNCDEF(J, f_Debugln, "Debugln", DUK_VARARGS);
-    FUNCDEF(J, f_Quit, "Quit", 0);
-    FUNCDEF(J, f_Gc, "Gc", 1);
-    FUNCDEF(J, f_MemoryInfo, "MemoryInfo", 0);
-    FUNCDEF(J, f_Sleep, "Sleep", 1);
+    NFUNCDEF(J, Read, 1);
+    NFUNCDEF(J, ReadZIP, 2);
+    NFUNCDEF(J, List, 1);
+    NFUNCDEF(J, Stat, 1);
+    NFUNCDEF(J, RmDir, 1);
+    NFUNCDEF(J, RmFile, 1);
+    NFUNCDEF(J, Rename, 2);
+    NFUNCDEF(J, MakeDir, 1);
+    NFUNCDEF(J, System, 1);
 
-    FUNCDEF(J, f_Read, "Read", 1);
-    FUNCDEF(J, f_List, "List", 1);
-    FUNCDEF(J, f_Stat, "Stat", 1);
+    NFUNCDEF(J, Print, 0);
+    NFUNCDEF(J, Println, 0);
+    NFUNCDEF(J, Gc, 1);
+    NFUNCDEF(J, MemoryInfo, 0);
+    NFUNCDEF(J, Sleep, 1);
+    NFUNCDEF(J, StringToBytes, 1);
+    NFUNCDEF(J, BytesToString, 1);
+    NFUNCDEF(J, NamedFunction, 3);
 
-    FUNCDEF(J, f_RmFile, "RmFile", 1);
-    FUNCDEF(J, f_RmDir, "RmDir", 1);
-    FUNCDEF(J, f_Rename, "Rename", 2);
-    FUNCDEF(J, f_MakeDir, "MakeDir", 1);
-    FUNCDEF(J, f_System, "System", 1);
+    NFUNCDEF(J, Debug, 0);
+    NFUNCDEF(J, Debugln, 0);
+    NFUNCDEF(J, Quit, 0);
 
-    FUNCDEF(J, f_NoSound, "NoSound", 0);
-    FUNCDEF(J, f_Sound, "Sound", 1);
+    NFUNCDEF(J, NoSound, 0);
+    NFUNCDEF(J, Sound, 1);
 
-    FUNCDEF(J, f_FreeSpace, "FreeSpace", 1);
-    FUNCDEF(J, f_IsFixed, "IsFixed", 1);
-    FUNCDEF(J, f_IsCDROM, "IsCDROM", 1);
-    FUNCDEF(J, f_IsFAT32, "IsFAT32", 1);
-    FUNCDEF(J, f_IsRAMDisk, "IsRAMDisk", 1);
-    FUNCDEF(J, f_GetFSType, "GetFSType", 1);
+    NFUNCDEF(J, FreeSpace, 1);
+    NFUNCDEF(J, IsFixed, 1);
+    NFUNCDEF(J, IsCDROM, 1);
+    NFUNCDEF(J, IsFAT32, 1);
+    NFUNCDEF(J, IsRAMDisk, 1);
+    NFUNCDEF(J, GetFSType, 1);
 }

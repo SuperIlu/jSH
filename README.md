@@ -32,7 +32,7 @@ Println("All done...");
 And can be run like this: `JSH.EXE RENALL.JS SOMEDIR .FOO .BAR` to rename all files ending in `.FOO` to `.BAR`.
 
 jSH was only possible due to the work of these people/projects:
-* [Duktape](https://duktape.org/) JavaScript interpreter
+* [MuJS](https://mujs.com/) JavaScript interpreter
 * [DJGPP](http://www.delorie.com/djgpp/) from DJ Delorie and the [Linux compile scripts](https://github.com/andrewwutw/build-djgpp) by Andrew Wu.
 
 You can find me on [Twitter](https://twitter.com/dec_hl) if you want...
@@ -60,9 +60,9 @@ I used the following command lines to update/install my dependencies:
 ```bash
 sudo apt-get update
 sudo apt-get dist-upgrade
-sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm python-yaml
+sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm python-yaml zip dos2unix
 sudo npm install -g jsdoc
-sudo npm install -g tui-jsdoc-template
+sudo npm install -g better-docs
 ```
 
 And the following commands to build and install DJGPP to `/home/ilu/djgpp`.:
@@ -93,8 +93,8 @@ See the [changelog](/CHANGELOG.md) for the projects history.
 ## jSH
 All code from me is released under **MIT license**.
 
-## Duktape
-Duktape is released under **MIT license**. See *LICENSE.txt* in the duktape folder for details.
+## MuJS
+MuJS is released under **ISC license**. See *COPYING* in the MuJS folder for details.
 
 ## DZComm
 DZComm serial library is release as **gift-ware**. See *readme.txt* in the dzcomm folder for details.
@@ -103,3 +103,35 @@ DZComm serial library is release as **gift-ware**. See *readme.txt* in the dzcom
 [CWSDPMI](http://sandmann.dotster.com/cwsdpmi/) DPMI host is licensed under **GPL**. The documentation states:
 > The files in this binary distribution may be redistributed under the GPL (with source) or without the source code provided.
 
+## zip code
+[zip](https://github.com/kuba--/zip) is licensed by UNLICENSE
+
+## WATTCP
+WATTCP - TCP/IP library routines
+
+Copyright (c) 1990, 1991, 1992, 1993 Erick Engelke
+
+Portions Copyright (c) 1993  Quentin Smart
+Portions Copyright (c) 1991  University of Waterloo
+Portions Copyright (c) 1990  National Center for Supercomputer Applications
+Portions Copyright (c) 1990  Clarkson University
+Portions Copyright (c) 1983, 1986, Imagen Corporation
+
+    This software is distributed in the hope that it will be useful,
+    but without any warranty; without even the implied warranty of
+    merchantability or fitness for a particular purpose.
+
+**RESTRICTIONS**
+You may freely use this library to produce programs which you may give
+away or sell in source format, or as compiled executables, or both.
+
+You may not sell this library or a portion thereof or distribute modified
+versions the library code in either source or OBJect or LIBrary format
+without written permission from the author.  The author still maintains
+copyright privileges and will assert the privileges of ownership for
+purposes of royalties such distributions.
+
+Portions of this code were written or enhanced by others and offerred
+to me for distribution in WATTCP under my copyright.  To my knowledge,
+all copyrights exercised are listed at the top of this file.  If this
+is incorrect, please contact me so I can rectify the situation.

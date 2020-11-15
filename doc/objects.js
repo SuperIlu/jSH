@@ -28,11 +28,13 @@ MemInfo = {};
 FreeInfo = {};
 
 /**
- * @property {number} PORT COM1, COM2, COM3, COM4, 
- * @property {number} BAUD B50, B75, B110, B134, B150, B200, B300, B600, B1200, B1800, B2400, B4800, B9600, B19200, B38400, B57600, B115200, 
- * @property {number} BIT BITS_5, BITS_6, BITS_7, BITS_8, 
- * @property {number} PARITY NO_PARITY, ODD_PARITY, EVEN_PARITY, MARK_PARITY, SPACE_PARITY, 
- * @property {number} FLOW	NO_CONTROL, XON_XOFF, RTS_CTS
- * @property {number} STOP STOP_1, STOP_2, 
+ * An array with four numbers (e.g. [192.168.1.2]).
+ * @type IpAdddress
  */
-COM = {};
+class IpAddress { }
+
+/**
+ * An array with the HTTP result: [code, message, header, data]
+ * @type HTTPResult
+ */
+class HTTPResult { }
