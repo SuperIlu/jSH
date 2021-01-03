@@ -58,6 +58,8 @@ File.prototype.WriteBytes = function (data) { };
  */
 /**
  * Open a COM port.
+ * Note: COM port functions must be activated/loaded by calling LoadLibrary("comport")!
+ * 
  * @class
  * @param {COM} port one of COM.PORT.x
  * @param {COM} baud one of COM.BAUD.x

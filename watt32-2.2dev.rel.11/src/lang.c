@@ -7,11 +7,17 @@
 
 #define yy_create_buffer _w32__create_buffer
 #define yy_delete_buffer _w32__delete_buffer
-#define yy_flex_debug _w32__flex_debug
+#define yy_scan_buffer _w32__scan_buffer
+#define yy_scan_string _w32__scan_string
+#define yy_scan_bytes _w32__scan_bytes
 #define yy_init_buffer _w32__init_buffer
 #define yy_flush_buffer _w32__flush_buffer
 #define yy_load_buffer_state _w32__load_buffer_state
 #define yy_switch_to_buffer _w32__switch_to_buffer
+#define yypush_buffer_state _w32_push_buffer_state
+#define yypop_buffer_state _w32_pop_buffer_state
+#define yyensure_buffer_stack _w32_ensure_buffer_stack
+#define yy_flex_debug _w32__flex_debug
 #define yyin _w32_in
 #define yyleng _w32_leng
 #define yylex _w32_lex
@@ -26,10 +32,244 @@
 
 #define FLEX_SCANNER
 #define YY_FLEX_MAJOR_VERSION 2
-#define YY_FLEX_MINOR_VERSION 5
-#define YY_FLEX_SUBMINOR_VERSION 35
+#define YY_FLEX_MINOR_VERSION 6
+#define YY_FLEX_SUBMINOR_VERSION 4
 #if YY_FLEX_SUBMINOR_VERSION > 0
 #define FLEX_BETA
+#endif
+
+#ifdef yy_create_buffer
+#define _w32__create_buffer_ALREADY_DEFINED
+#else
+#define yy_create_buffer _w32__create_buffer
+#endif
+
+#ifdef yy_delete_buffer
+#define _w32__delete_buffer_ALREADY_DEFINED
+#else
+#define yy_delete_buffer _w32__delete_buffer
+#endif
+
+#ifdef yy_scan_buffer
+#define _w32__scan_buffer_ALREADY_DEFINED
+#else
+#define yy_scan_buffer _w32__scan_buffer
+#endif
+
+#ifdef yy_scan_string
+#define _w32__scan_string_ALREADY_DEFINED
+#else
+#define yy_scan_string _w32__scan_string
+#endif
+
+#ifdef yy_scan_bytes
+#define _w32__scan_bytes_ALREADY_DEFINED
+#else
+#define yy_scan_bytes _w32__scan_bytes
+#endif
+
+#ifdef yy_init_buffer
+#define _w32__init_buffer_ALREADY_DEFINED
+#else
+#define yy_init_buffer _w32__init_buffer
+#endif
+
+#ifdef yy_flush_buffer
+#define _w32__flush_buffer_ALREADY_DEFINED
+#else
+#define yy_flush_buffer _w32__flush_buffer
+#endif
+
+#ifdef yy_load_buffer_state
+#define _w32__load_buffer_state_ALREADY_DEFINED
+#else
+#define yy_load_buffer_state _w32__load_buffer_state
+#endif
+
+#ifdef yy_switch_to_buffer
+#define _w32__switch_to_buffer_ALREADY_DEFINED
+#else
+#define yy_switch_to_buffer _w32__switch_to_buffer
+#endif
+
+#ifdef yypush_buffer_state
+#define _w32_push_buffer_state_ALREADY_DEFINED
+#else
+#define yypush_buffer_state _w32_push_buffer_state
+#endif
+
+#ifdef yypop_buffer_state
+#define _w32_pop_buffer_state_ALREADY_DEFINED
+#else
+#define yypop_buffer_state _w32_pop_buffer_state
+#endif
+
+#ifdef yyensure_buffer_stack
+#define _w32_ensure_buffer_stack_ALREADY_DEFINED
+#else
+#define yyensure_buffer_stack _w32_ensure_buffer_stack
+#endif
+
+#ifdef yylex
+#define _w32_lex_ALREADY_DEFINED
+#else
+#define yylex _w32_lex
+#endif
+
+#ifdef yyrestart
+#define _w32_restart_ALREADY_DEFINED
+#else
+#define yyrestart _w32_restart
+#endif
+
+#ifdef yylex_init
+#define _w32_lex_init_ALREADY_DEFINED
+#else
+#define yylex_init _w32_lex_init
+#endif
+
+#ifdef yylex_init_extra
+#define _w32_lex_init_extra_ALREADY_DEFINED
+#else
+#define yylex_init_extra _w32_lex_init_extra
+#endif
+
+#ifdef yylex_destroy
+#define _w32_lex_destroy_ALREADY_DEFINED
+#else
+#define yylex_destroy _w32_lex_destroy
+#endif
+
+#ifdef yyget_debug
+#define _w32_get_debug_ALREADY_DEFINED
+#else
+#define yyget_debug _w32_get_debug
+#endif
+
+#ifdef yyset_debug
+#define _w32_set_debug_ALREADY_DEFINED
+#else
+#define yyset_debug _w32_set_debug
+#endif
+
+#ifdef yyget_extra
+#define _w32_get_extra_ALREADY_DEFINED
+#else
+#define yyget_extra _w32_get_extra
+#endif
+
+#ifdef yyset_extra
+#define _w32_set_extra_ALREADY_DEFINED
+#else
+#define yyset_extra _w32_set_extra
+#endif
+
+#ifdef yyget_in
+#define _w32_get_in_ALREADY_DEFINED
+#else
+#define yyget_in _w32_get_in
+#endif
+
+#ifdef yyset_in
+#define _w32_set_in_ALREADY_DEFINED
+#else
+#define yyset_in _w32_set_in
+#endif
+
+#ifdef yyget_out
+#define _w32_get_out_ALREADY_DEFINED
+#else
+#define yyget_out _w32_get_out
+#endif
+
+#ifdef yyset_out
+#define _w32_set_out_ALREADY_DEFINED
+#else
+#define yyset_out _w32_set_out
+#endif
+
+#ifdef yyget_leng
+#define _w32_get_leng_ALREADY_DEFINED
+#else
+#define yyget_leng _w32_get_leng
+#endif
+
+#ifdef yyget_text
+#define _w32_get_text_ALREADY_DEFINED
+#else
+#define yyget_text _w32_get_text
+#endif
+
+#ifdef yyget_lineno
+#define _w32_get_lineno_ALREADY_DEFINED
+#else
+#define yyget_lineno _w32_get_lineno
+#endif
+
+#ifdef yyset_lineno
+#define _w32_set_lineno_ALREADY_DEFINED
+#else
+#define yyset_lineno _w32_set_lineno
+#endif
+
+#ifdef yywrap
+#define _w32_wrap_ALREADY_DEFINED
+#else
+#define yywrap _w32_wrap
+#endif
+
+#ifdef yyalloc
+#define _w32_alloc_ALREADY_DEFINED
+#else
+#define yyalloc _w32_alloc
+#endif
+
+#ifdef yyrealloc
+#define _w32_realloc_ALREADY_DEFINED
+#else
+#define yyrealloc _w32_realloc
+#endif
+
+#ifdef yyfree
+#define _w32_free_ALREADY_DEFINED
+#else
+#define yyfree _w32_free
+#endif
+
+#ifdef yytext
+#define _w32_text_ALREADY_DEFINED
+#else
+#define yytext _w32_text
+#endif
+
+#ifdef yyleng
+#define _w32_leng_ALREADY_DEFINED
+#else
+#define yyleng _w32_leng
+#endif
+
+#ifdef yyin
+#define _w32_in_ALREADY_DEFINED
+#else
+#define yyin _w32_in
+#endif
+
+#ifdef yyout
+#define _w32_out_ALREADY_DEFINED
+#else
+#define yyout _w32_out
+#endif
+
+#ifdef yy_flex_debug
+#define _w32__flex_debug_ALREADY_DEFINED
+#else
+#define yy_flex_debug _w32__flex_debug
+#endif
+
+#ifdef yylineno
+#define _w32_lineno_ALREADY_DEFINED
+#else
+#define yylineno _w32_lineno
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -102,60 +342,48 @@ typedef unsigned int flex_uint32_t;
 #define UINT32_MAX             (4294967295U)
 #endif
 
+#ifndef SIZE_MAX
+#define SIZE_MAX               (~(size_t)0)
+#endif
+
 #endif /* ! C99 */
 
 #endif /* ! FLEXINT_H */
 
-#ifdef __cplusplus
+/* begin standard C++ headers. */
 
-/* The "const" storage-class-modifier is valid. */
-#define YY_USE_CONST
-
-#else	/* ! __cplusplus */
-
-/* C99 requires __STDC__ to be defined as 1. */
-#if defined (__STDC__)
-
-#define YY_USE_CONST
-
-#endif	/* defined (__STDC__) */
-#endif	/* ! __cplusplus */
-
-#ifdef YY_USE_CONST
+/* TODO: this is always defined, so inline it */
 #define yyconst const
+
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define yynoreturn __attribute__((__noreturn__))
 #else
-#define yyconst
+#define yynoreturn
 #endif
 
 /* Returned upon end-of-file. */
 #define YY_NULL 0
 
-/* Promotes a possibly negative, possibly signed char to an unsigned
- * integer for use as an array index.  If the signed char is negative,
- * we want to instead treat it as an 8-bit unsigned char, hence the
- * double cast.
+/* Promotes a possibly negative, possibly signed char to an
+ *   integer in range [0..255] for use as an array index.
  */
-#define YY_SC_TO_UI(c) ((unsigned int) (unsigned char) c)
+#define YY_SC_TO_UI(c) ((YY_CHAR) (c))
 
 /* Enter a start condition.  This macro really ought to take a parameter,
  * but we do it the disgusting crufty way forced on us by the ()-less
  * definition of BEGIN.
  */
 #define BEGIN (yy_start) = 1 + 2 *
-
 /* Translate the current start state into a value that can be later handed
  * to BEGIN to return to the state.  The YYSTATE alias is for lex
  * compatibility.
  */
 #define YY_START (((yy_start) - 1) / 2)
 #define YYSTATE YY_START
-
 /* Action number for EOF rule of a given start state. */
 #define YY_STATE_EOF(state) (YY_END_OF_BUFFER + state + 1)
-
 /* Special action meaning "start processing a new file". */
-#define YY_NEW_FILE _w32_restart(_w32_in  )
-
+#define YY_NEW_FILE yyrestart( yyin  )
 #define YY_END_OF_BUFFER_CHAR 0
 
 /* Size of default input buffer. */
@@ -180,49 +408,55 @@ typedef unsigned int flex_uint32_t;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #endif
 
-extern int _w32_leng;
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
 
-extern FILE *_w32_in, *_w32_out;
+extern int yyleng;
+
+extern FILE *yyin, *yyout;
 
 #define EOB_ACT_CONTINUE_SCAN 0
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
-
+    
     /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
      *       access to the local variable yy_act. Since yyless() is a macro, it would break
-     *       existing scanners that call yyless() from OUTSIDE _w32_lex. 
+     *       existing scanners that call yyless() from OUTSIDE yylex.
      *       One obvious solution it to make yy_act a global. I tried that, and saw
-     *       a 5% performance hit in a non-_w32_lineno scanner, because yy_act is
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
      *       normally declared as a register variable-- so it is not worth it.
      */
     #define  YY_LESS_LINENO(n) \
             do { \
                 int yyl;\
-                for ( yyl = n; yyl < _w32_leng; ++yyl )\
-                    if ( _w32_text[yyl] == '\n' )\
-                        --_w32_lineno;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
             }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
 	do \
 		{ \
-		/* Undo effects of setting up _w32_text. */ \
+		/* Undo effects of setting up yytext. */ \
         int yyless_macro_arg = (n); \
         YY_LESS_LINENO(yyless_macro_arg);\
 		*yy_cp = (yy_hold_char); \
 		YY_RESTORE_YY_MORE_OFFSET \
 		(yy_c_buf_p) = yy_cp = yy_bp + yyless_macro_arg - YY_MORE_ADJ; \
-		YY_DO_BEFORE_ACTION; /* set up _w32_text again */ \
+		YY_DO_BEFORE_ACTION; /* set up yytext again */ \
 		} \
 	while ( 0 )
-
 #define unput(c) yyunput( c, (yytext_ptr)  )
-
-#ifndef YY_TYPEDEF_YY_SIZE_T
-#define YY_TYPEDEF_YY_SIZE_T
-typedef size_t yy_size_t;
-#endif
 
 #ifndef YY_STRUCT_YY_BUFFER_STATE
 #define YY_STRUCT_YY_BUFFER_STATE
@@ -236,7 +470,7 @@ struct yy_buffer_state
 	/* Size of input buffer in bytes, not including room for EOB
 	 * characters.
 	 */
-	yy_size_t yy_buf_size;
+	int yy_buf_size;
 
 	/* Number of characters read into yy_ch_buf, not including EOB
 	 * characters.
@@ -264,7 +498,7 @@ struct yy_buffer_state
 
     int yy_bs_lineno; /**< The line count. */
     int yy_bs_column; /**< The column count. */
-    
+
 	/* Whether to try to fill the input buffer when we reach the
 	 * end of it.
 	 */
@@ -281,8 +515,8 @@ struct yy_buffer_state
 	 * possible backing-up.
 	 *
 	 * When we actually see the EOF, we change the status to "new"
-	 * (via _w32_restart()), so that the user can continue scanning by
-	 * just pointing _w32_in at a new input file.
+	 * (via yyrestart()), so that the user can continue scanning by
+	 * just pointing yyin at a new input file.
 	 */
 #define YY_BUFFER_EOF_PENDING 2
 
@@ -292,7 +526,7 @@ struct yy_buffer_state
 /* Stack of input buffers. */
 static size_t yy_buffer_stack_top = 0; /**< index of top of stack. */
 static size_t yy_buffer_stack_max = 0; /**< capacity of stack. */
-static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
+static YY_BUFFER_STATE * yy_buffer_stack = NULL; /**< Stack as an array. */
 
 /* We provide macros for accessing buffer states in case in the
  * future we want to put the buffer states in a more general
@@ -303,103 +537,98 @@ static YY_BUFFER_STATE * yy_buffer_stack = 0; /**< Stack as an array. */
 #define YY_CURRENT_BUFFER ( (yy_buffer_stack) \
                           ? (yy_buffer_stack)[(yy_buffer_stack_top)] \
                           : NULL)
-
 /* Same as previous macro, but useful when we know that the buffer stack is not
  * NULL or when we need an lvalue. For internal use only.
  */
 #define YY_CURRENT_BUFFER_LVALUE (yy_buffer_stack)[(yy_buffer_stack_top)]
 
-/* yy_hold_char holds the character lost when _w32_text is formed. */
+/* yy_hold_char holds the character lost when yytext is formed. */
 static char yy_hold_char;
 static int yy_n_chars;		/* number of characters read into yy_ch_buf */
-int _w32_leng;
+int yyleng;
 
 /* Points to current character in buffer. */
-static char *yy_c_buf_p = (char *) 0;
+static char *yy_c_buf_p = NULL;
 static int yy_init = 0;		/* whether we need to initialize */
 static int yy_start = 0;	/* start state number */
 
-/* Flag which is used to allow _w32_wrap()'s to do buffer switches
- * instead of setting up a fresh _w32_in.  A bit of a hack ...
+/* Flag which is used to allow yywrap()'s to do buffer switches
+ * instead of setting up a fresh yyin.  A bit of a hack ...
  */
 static int yy_did_buffer_switch_on_eof;
 
-void _w32_restart (FILE *input_file  );
-void _w32__switch_to_buffer (YY_BUFFER_STATE new_buffer  );
-YY_BUFFER_STATE _w32__create_buffer (FILE *file,int size  );
-void _w32__delete_buffer (YY_BUFFER_STATE b  );
-void _w32__flush_buffer (YY_BUFFER_STATE b  );
-void _w32_push_buffer_state (YY_BUFFER_STATE new_buffer  );
-void _w32_pop_buffer_state (void );
+void yyrestart ( FILE *input_file  );
+void yy_switch_to_buffer ( YY_BUFFER_STATE new_buffer  );
+YY_BUFFER_STATE yy_create_buffer ( FILE *file, int size  );
+void yy_delete_buffer ( YY_BUFFER_STATE b  );
+void yy_flush_buffer ( YY_BUFFER_STATE b  );
+void yypush_buffer_state ( YY_BUFFER_STATE new_buffer  );
+void yypop_buffer_state ( void );
 
-static void _w32_ensure_buffer_stack (void );
-static void _w32__load_buffer_state (void );
-static void _w32__init_buffer (YY_BUFFER_STATE b,FILE *file  );
+static void yyensure_buffer_stack ( void );
+static void yy_load_buffer_state ( void );
+static void yy_init_buffer ( YY_BUFFER_STATE b, FILE *file  );
+#define YY_FLUSH_BUFFER yy_flush_buffer( YY_CURRENT_BUFFER )
 
-#define YY_FLUSH_BUFFER _w32__flush_buffer(YY_CURRENT_BUFFER )
+YY_BUFFER_STATE yy_scan_buffer ( char *base, yy_size_t size  );
+YY_BUFFER_STATE yy_scan_string ( const char *yy_str  );
+YY_BUFFER_STATE yy_scan_bytes ( const char *bytes, int len  );
 
-YY_BUFFER_STATE _w32__scan_buffer (char *base,yy_size_t size  );
-YY_BUFFER_STATE _w32__scan_string (yyconst char *yy_str  );
-YY_BUFFER_STATE _w32__scan_bytes (yyconst char *bytes,int len  );
+void *yyalloc ( yy_size_t  );
+void *yyrealloc ( void *, yy_size_t  );
+void yyfree ( void *  );
 
-void *_w32_alloc (yy_size_t  );
-void *_w32_realloc (void *,yy_size_t  );
-void _w32_free (void *  );
-
-#define yy_new_buffer _w32__create_buffer
-
+#define yy_new_buffer yy_create_buffer
 #define yy_set_interactive(is_interactive) \
 	{ \
 	if ( ! YY_CURRENT_BUFFER ){ \
-        _w32_ensure_buffer_stack (); \
+        yyensure_buffer_stack (); \
 		YY_CURRENT_BUFFER_LVALUE =    \
-            _w32__create_buffer(_w32_in,YY_BUF_SIZE ); \
+            yy_create_buffer( yyin, YY_BUF_SIZE ); \
 	} \
 	YY_CURRENT_BUFFER_LVALUE->yy_is_interactive = is_interactive; \
 	}
-
 #define yy_set_bol(at_bol) \
 	{ \
 	if ( ! YY_CURRENT_BUFFER ){\
-        _w32_ensure_buffer_stack (); \
+        yyensure_buffer_stack (); \
 		YY_CURRENT_BUFFER_LVALUE =    \
-            _w32__create_buffer(_w32_in,YY_BUF_SIZE ); \
+            yy_create_buffer( yyin, YY_BUF_SIZE ); \
 	} \
 	YY_CURRENT_BUFFER_LVALUE->yy_at_bol = at_bol; \
 	}
-
 #define YY_AT_BOL() (YY_CURRENT_BUFFER_LVALUE->yy_at_bol)
 
 /* Begin user sect3 */
+typedef flex_uint8_t YY_CHAR;
 
-typedef unsigned char YY_CHAR;
-
-FILE *_w32_in = (FILE *) 0, *_w32_out = (FILE *) 0;
+FILE *yyin = NULL, *yyout = NULL;
 
 typedef int yy_state_type;
 
-extern int _w32_lineno;
+extern int yylineno;
+int yylineno = 1;
 
-int _w32_lineno = 1;
+extern char *yytext;
+#ifdef yytext_ptr
+#undef yytext_ptr
+#endif
+#define yytext_ptr yytext
 
-extern char *_w32_text;
-#define yytext_ptr _w32_text
-
-static yy_state_type yy_get_previous_state (void );
-static yy_state_type yy_try_NUL_trans (yy_state_type current_state  );
-static int yy_get_next_buffer (void );
-static void yy_fatal_error (yyconst char msg[]  );
+static yy_state_type yy_get_previous_state ( void );
+static yy_state_type yy_try_NUL_trans ( yy_state_type current_state  );
+static int yy_get_next_buffer ( void );
+static void yynoreturn yy_fatal_error ( const char* msg  );
 
 /* Done after the current pattern has been matched and before the
- * corresponding action - sets up _w32_text.
+ * corresponding action - sets up yytext.
  */
 #define YY_DO_BEFORE_ACTION \
 	(yytext_ptr) = yy_bp; \
-	_w32_leng = (size_t) (yy_cp - yy_bp); \
+	yyleng = (int) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-
 #define YY_NUM_RULES 29
 #define YY_END_OF_BUFFER 30
 /* This struct is not used in this scanner,
@@ -409,7 +638,7 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[69] =
+static const flex_int16_t yy_accept[69] =
     {   0,
         0,    0,    0,    0,    0,    0,    0,    0,   30,    5,
         1,    3,    5,    4,    5,   21,   20,   21,    6,   21,
@@ -420,7 +649,7 @@ static yyconst flex_int16_t yy_accept[69] =
        18,   16,   25,   17,   18,   16,   17,    0
     } ;
 
-static yyconst flex_int32_t yy_ec[256] =
+static const YY_CHAR yy_ec[256] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
         1,    1,    4,    1,    1,    1,    1,    1,    1,    1,
@@ -452,7 +681,7 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[37] =
+static const YY_CHAR yy_meta[37] =
     {   0,
         1,    1,    1,    1,    1,    1,    2,    2,    2,    1,
         2,    2,    2,    2,    2,    2,    1,    1,    1,    1,
@@ -460,7 +689,7 @@ static yyconst flex_int32_t yy_meta[37] =
         1,    1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[77] =
+static const flex_int16_t yy_base[77] =
     {   0,
         0,    5,    9,   12,   15,   17,   39,   70,   82,  152,
        79,  152,   77,  152,   19,  152,  152,   72,  152,  103,
@@ -472,7 +701,7 @@ static yyconst flex_int16_t yy_base[77] =
       143,  145,  147,  149,   28,   24
     } ;
 
-static yyconst flex_int16_t yy_def[77] =
+static const flex_int16_t yy_def[77] =
     {   0,
        69,   69,   70,   70,   71,   71,   72,   72,   68,   68,
        68,   68,   68,   68,   73,   68,   68,   68,   68,   68,
@@ -484,7 +713,7 @@ static yyconst flex_int16_t yy_def[77] =
        68,   68,   68,   68,   68,   68
     } ;
 
-static yyconst flex_int16_t yy_nxt[189] =
+static const flex_int16_t yy_nxt[189] =
     {   0,
        68,   11,   12,   13,   14,   15,   11,   12,   13,   14,
        15,   17,   18,   19,   17,   18,   19,   22,   23,   22,
@@ -508,7 +737,7 @@ static yyconst flex_int16_t yy_nxt[189] =
        68,   68,   68,   68,   68,   68,   68,   68
     } ;
 
-static yyconst flex_int16_t yy_chk[189] =
+static const flex_int16_t yy_chk[189] =
     {   0,
         0,    1,    1,    1,    1,    1,    2,    2,    2,    2,
         2,    3,    3,    3,    4,    4,    4,    5,    5,    6,
@@ -533,7 +762,7 @@ static yyconst flex_int16_t yy_chk[189] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static yyconst flex_int32_t yy_rule_can_match_eol[30] =
+static const flex_int32_t yy_rule_can_match_eol[30] =
     {   0,
 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     1, 0, 0, 1, 0, 0, 1, 1, 0, 0,     };
@@ -541,8 +770,8 @@ static yyconst flex_int32_t yy_rule_can_match_eol[30] =
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
-extern int _w32__flex_debug;
-int _w32__flex_debug = 0;
+extern int yy_flex_debug;
+int yy_flex_debug = 0;
 
 /* The intent behind this definition is that it'll catch
  * any uses of REJECT which flex missed.
@@ -551,7 +780,7 @@ int _w32__flex_debug = 0;
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-char *_w32_text;
+char *yytext;
 #line 1 "lang.l"
 /*!\file lang.l
  *
@@ -587,7 +816,7 @@ char *_w32_text;
 
 #define BUF_SIZE    500
 
-static int  _w32_lex      (void);
+static int  yylex      (void);
 static void AddChar    (int ch);
 static void AddDecimal (const char *buf);
 static void AddHexcode (const char *buf);
@@ -639,10 +868,11 @@ static struct Language {
 #endif
 
 
+#line 872 "<stdout>"
 /**
  * Language prefix.
  *
- * Prefix normal yacc parser interface names (yyparse, _w32_lex, yyerror, etc),
+ * Prefix normal yacc parser interface names (yyparse, yylex, yyerror, etc),
  * as well as gratuitiously global symbol names, so we can have multiple
  * yacc generated parsers in the same program.  Note that these are only
  * the variables produced by yacc.  If other parser generators (bison,
@@ -721,7 +951,7 @@ static struct Language {
  *  zh Chinese
  *  zu Zulu
  */
-#line 725 "<stdout>"
+#line 955 "<stdout>"
 
 #define INITIAL 0
 #define STRING 1
@@ -740,36 +970,36 @@ static struct Language {
 #define YY_EXTRA_TYPE void *
 #endif
 
-static int yy_init_globals (void );
+static int yy_init_globals ( void );
 
 /* Accessor methods to globals.
    These are made visible to non-reentrant scanners for convenience. */
 
-int _w32_lex_destroy (void );
+int yylex_destroy ( void );
 
-int _w32_get_debug (void );
+int yyget_debug ( void );
 
-void _w32_set_debug (int debug_flag  );
+void yyset_debug ( int debug_flag  );
 
-YY_EXTRA_TYPE _w32_get_extra (void );
+YY_EXTRA_TYPE yyget_extra ( void );
 
-void _w32_set_extra (YY_EXTRA_TYPE user_defined  );
+void yyset_extra ( YY_EXTRA_TYPE user_defined  );
 
-FILE *_w32_get_in (void );
+FILE *yyget_in ( void );
 
-void _w32_set_in  (FILE * in_str  );
+void yyset_in  ( FILE * _in_str  );
 
-FILE *_w32_get_out (void );
+FILE *yyget_out ( void );
 
-void _w32_set_out  (FILE * out_str  );
+void yyset_out  ( FILE * _out_str  );
 
-int _w32_get_leng (void );
+			int yyget_leng ( void );
 
-char *_w32_get_text (void );
+char *yyget_text ( void );
 
-int _w32_get_lineno (void );
+int yyget_lineno ( void );
 
-void _w32_set_lineno (int line_number  );
+void yyset_lineno ( int _line_number  );
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -777,28 +1007,31 @@ void _w32_set_lineno (int line_number  );
 
 #ifndef YY_SKIP_YYWRAP
 #ifdef __cplusplus
-extern "C" int _w32_wrap (void );
+extern "C" int yywrap ( void );
 #else
-extern int _w32_wrap (void );
+extern int yywrap ( void );
 #endif
 #endif
 
-    static void yyunput (int c,char *buf_ptr  );
+#ifndef YY_NO_UNPUT
     
+    static void yyunput ( int c, char *buf_ptr  );
+    
+#endif
+
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char *,yyconst char *,int );
+static void yy_flex_strncpy ( char *, const char *, int );
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * );
+static int yy_flex_strlen ( const char * );
 #endif
 
 #ifndef YY_NO_INPUT
-
 #ifdef __cplusplus
-static int yyinput (void );
+static int yyinput ( void );
 #else
-static int input (void );
+static int input ( void );
 #endif
 
 #endif
@@ -818,7 +1051,7 @@ static int input (void );
 /* This used to be an fputs(), but since the string might contain NUL's,
  * we now use fwrite().
  */
-#define ECHO do { if (fwrite( _w32_text, _w32_leng, 1, _w32_out )) {} } while (0)
+#define ECHO do { if (fwrite( yytext, (size_t) yyleng, 1, yyout )) {} } while (0)
 #endif
 
 /* Gets input and stuffs it into "buf".  number of characters read, or YY_NULL,
@@ -829,20 +1062,20 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		size_t n; \
+		int n; \
 		for ( n = 0; n < max_size && \
-			     (c = getc( _w32_in )) != EOF && c != '\n'; ++n ) \
+			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \
 			buf[n++] = (char) c; \
-		if ( c == EOF && ferror( _w32_in ) ) \
+		if ( c == EOF && ferror( yyin ) ) \
 			YY_FATAL_ERROR( "input in flex scanner failed" ); \
 		result = n; \
 		} \
 	else \
 		{ \
 		errno=0; \
-		while ( (result = fread(buf, 1, max_size, _w32_in))==0 && ferror(_w32_in)) \
+		while ( (result = (int) fread(buf, 1, (yy_size_t) max_size, yyin)) == 0 && ferror(yyin)) \
 			{ \
 			if( errno != EINTR) \
 				{ \
@@ -850,7 +1083,7 @@ static int input (void );
 				break; \
 				} \
 			errno=0; \
-			clearerr(_w32_in); \
+			clearerr(yyin); \
 			} \
 		}\
 \
@@ -883,12 +1116,12 @@ static int input (void );
 #ifndef YY_DECL
 #define YY_DECL_IS_OURS 1
 
-extern int _w32_lex (void);
+extern int yylex (void);
 
-#define YY_DECL int _w32_lex (void)
+#define YY_DECL int yylex (void)
 #endif /* !YY_DECL */
 
-/* Code executed at the beginning of each rule, after _w32_text and _w32_leng
+/* Code executed at the beginning of each rule, after yytext and yyleng
  * have been set up.
  */
 #ifndef YY_USER_ACTION
@@ -897,7 +1130,7 @@ extern int _w32_lex (void);
 
 /* Code executed at the end of each rule. */
 #ifndef YY_BREAK
-#define YY_BREAK break;
+#define YY_BREAK /*LINTED*/break;
 #endif
 
 #define YY_RULE_SETUP \
@@ -907,15 +1140,10 @@ extern int _w32_lex (void);
  */
 YY_DECL
 {
-	register yy_state_type yy_current_state;
-	register char *yy_cp, *yy_bp;
-	register int yy_act;
+	yy_state_type yy_current_state;
+	char *yy_cp, *yy_bp;
+	int yy_act;
     
-#line 187 "lang.l"
-
-
-#line 918 "<stdout>"
-
 	if ( !(yy_init) )
 		{
 		(yy_init) = 1;
@@ -927,26 +1155,32 @@ YY_DECL
 		if ( ! (yy_start) )
 			(yy_start) = 1;	/* first start state */
 
-		if ( ! _w32_in )
-			_w32_in = stdin;
+		if ( ! yyin )
+			yyin = stdin;
 
-		if ( ! _w32_out )
-			_w32_out = stdout;
+		if ( ! yyout )
+			yyout = stdout;
 
 		if ( ! YY_CURRENT_BUFFER ) {
-			_w32_ensure_buffer_stack ();
+			yyensure_buffer_stack ();
 			YY_CURRENT_BUFFER_LVALUE =
-				_w32__create_buffer(_w32_in,YY_BUF_SIZE );
+				yy_create_buffer( yyin, YY_BUF_SIZE );
 		}
 
-		_w32__load_buffer_state( );
+		yy_load_buffer_state(  );
 		}
 
-	while ( 1 )		/* loops until end-of-file is reached */
+	{
+#line 187 "lang.l"
+
+
+#line 1178 "<stdout>"
+
+	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
 		yy_cp = (yy_c_buf_p);
 
-		/* Support of _w32_text. */
+		/* Support of yytext. */
 		*yy_cp = (yy_hold_char);
 
 		/* yy_bp points to the position in yy_ch_buf of the start of
@@ -958,7 +1192,7 @@ YY_DECL
 yy_match:
 		do
 			{
-			register YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)];
+			YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)] ;
 			if ( yy_accept[yy_current_state] )
 				{
 				(yy_last_accepting_state) = yy_current_state;
@@ -968,9 +1202,9 @@ yy_match:
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
 				if ( yy_current_state >= 69 )
-					yy_c = yy_meta[(unsigned int) yy_c];
+					yy_c = yy_meta[yy_c];
 				}
-			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
 		while ( yy_current_state != 68 );
@@ -985,10 +1219,10 @@ yy_find_action:
 		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
 			{
 			int yyl;
-			for ( yyl = 0; yyl < _w32_leng; ++yyl )
-				if ( _w32_text[yyl] == '\n' )
-					   
-    _w32_lineno++;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					
+    yylineno++;
 ;
 			}
 
@@ -1034,7 +1268,7 @@ case 5:
 YY_RULE_SETUP
 #line 198 "lang.l"
 {
-                       unput (_w32_text[0]);
+                       unput (yytext[0]);
                        BEGIN (PREFIX);
                      }
 	YY_BREAK
@@ -1093,22 +1327,22 @@ AddChar ('\"');
 case 16:
 YY_RULE_SETUP
 #line 215 "lang.l"
-AddHexcode (_w32_text+2);
+AddHexcode (yytext+2);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 216 "lang.l"
-AddOctal   (_w32_text+1);
+AddOctal   (yytext+1);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 217 "lang.l"
-AddDecimal (_w32_text+1);
+AddDecimal (yytext+1);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 218 "lang.l"
-Fatal ("Unknown ESC code: ", _w32_text);
+Fatal ("Unknown ESC code: ", yytext);
 	YY_BREAK
 case 20:
 /* rule 20 can match eol */
@@ -1119,7 +1353,7 @@ Fatal ("Unterminated line", NULL);
 case 21:
 YY_RULE_SETUP
 #line 220 "lang.l"
-AddChar (_w32_text[0]);
+AddChar (yytext[0]);
 	YY_BREAK
 case YY_STATE_EOF(STRING):
 #line 221 "lang.l"
@@ -1164,8 +1398,8 @@ case 25:
 YY_RULE_SETUP
 #line 243 "lang.l"
 {
-                       DEBUG ("lang `%s',\n", _w32_text);
-                       if (!strncmp(_w32_text,lang.prefix,3))
+                       DEBUG ("lang `%s',\n", yytext);
+                       if (!strncmp(yytext,lang.prefix,3))
                        {
                          ptr    = buf;
                          do_ref = FALSE;
@@ -1193,7 +1427,7 @@ INCLINE();
 case 28:
 YY_RULE_SETUP
 #line 259 "lang.l"
-Fatal ("Unknown language prefix: ", _w32_text);
+Fatal ("Unknown language prefix: ", yytext);
 	YY_BREAK
 
 case 29:
@@ -1201,7 +1435,7 @@ YY_RULE_SETUP
 #line 262 "lang.l"
 ECHO;
 	YY_BREAK
-#line 1205 "<stdout>"
+#line 1439 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(PREFIX):
 	yyterminate();
@@ -1219,15 +1453,15 @@ case YY_STATE_EOF(PREFIX):
 			{
 			/* We're scanning a new file or input source.  It's
 			 * possible that this happened because the user
-			 * just pointed _w32_in at a new source and called
-			 * _w32_lex().  If so, then we have to assure
+			 * just pointed yyin at a new source and called
+			 * yylex().  If so, then we have to assure
 			 * consistency between YY_CURRENT_BUFFER and our
 			 * globals.  Here is the right place to do so, because
 			 * this is the first action (other than possibly a
 			 * back-up) that will match for the new input source.
 			 */
 			(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_n_chars;
-			YY_CURRENT_BUFFER_LVALUE->yy_input_file = _w32_in;
+			YY_CURRENT_BUFFER_LVALUE->yy_input_file = yyin;
 			YY_CURRENT_BUFFER_LVALUE->yy_buffer_status = YY_BUFFER_NORMAL;
 			}
 
@@ -1281,11 +1515,11 @@ case YY_STATE_EOF(PREFIX):
 				{
 				(yy_did_buffer_switch_on_eof) = 0;
 
-				if ( _w32_wrap( ) )
+				if ( yywrap(  ) )
 					{
 					/* Note: because we've taken care in
 					 * yy_get_next_buffer() to have set up
-					 * _w32_text, we can now set up
+					 * yytext, we can now set up
 					 * yy_c_buf_p so that if some total
 					 * hoser (like flex itself) wants to
 					 * call the scanner after we return the
@@ -1334,7 +1568,8 @@ case YY_STATE_EOF(PREFIX):
 			"fatal flex scanner internal error--no action found" );
 	} /* end of action switch */
 		} /* end of scanning one token */
-} /* end of _w32_lex */
+	} /* end of user's declarations */
+} /* end of yylex */
 
 /* yy_get_next_buffer - try to read in a new buffer
  *
@@ -1345,9 +1580,9 @@ case YY_STATE_EOF(PREFIX):
  */
 static int yy_get_next_buffer (void)
 {
-    	register char *dest = YY_CURRENT_BUFFER_LVALUE->yy_ch_buf;
-	register char *source = (yytext_ptr);
-	register int number_to_move, i;
+    	char *dest = YY_CURRENT_BUFFER_LVALUE->yy_ch_buf;
+	char *source = (yytext_ptr);
+	int number_to_move, i;
 	int ret_val;
 
 	if ( (yy_c_buf_p) > &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[(yy_n_chars) + 1] )
@@ -1376,7 +1611,7 @@ static int yy_get_next_buffer (void)
 	/* Try to read more data. */
 
 	/* First move last chars to start of buffer. */
-	number_to_move = (int) ((yy_c_buf_p) - (yytext_ptr)) - 1;
+	number_to_move = (int) ((yy_c_buf_p) - (yytext_ptr) - 1);
 
 	for ( i = 0; i < number_to_move; ++i )
 		*(dest++) = *(source++);
@@ -1396,7 +1631,7 @@ static int yy_get_next_buffer (void)
 			{ /* Not enough room in the buffer - grow it. */
 
 			/* just a shorter name for the current buffer */
-			YY_BUFFER_STATE b = YY_CURRENT_BUFFER;
+			YY_BUFFER_STATE b = YY_CURRENT_BUFFER_LVALUE;
 
 			int yy_c_buf_p_offset =
 				(int) ((yy_c_buf_p) - b->yy_ch_buf);
@@ -1412,11 +1647,12 @@ static int yy_get_next_buffer (void)
 
 				b->yy_ch_buf = (char *)
 					/* Include room in for 2 EOB chars. */
-					_w32_realloc((void *) b->yy_ch_buf,b->yy_buf_size + 2  );
+					yyrealloc( (void *) b->yy_ch_buf,
+							 (yy_size_t) (b->yy_buf_size + 2)  );
 				}
 			else
 				/* Can't grow it, we don't own it. */
-				b->yy_ch_buf = 0;
+				b->yy_ch_buf = NULL;
 
 			if ( ! b->yy_ch_buf )
 				YY_FATAL_ERROR(
@@ -1434,7 +1670,7 @@ static int yy_get_next_buffer (void)
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			(yy_n_chars), (size_t) num_to_read );
+			(yy_n_chars), num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = (yy_n_chars);
 		}
@@ -1444,7 +1680,7 @@ static int yy_get_next_buffer (void)
 		if ( number_to_move == YY_MORE_ADJ )
 			{
 			ret_val = EOB_ACT_END_OF_FILE;
-			_w32_restart(_w32_in  );
+			yyrestart( yyin  );
 			}
 
 		else
@@ -1458,12 +1694,15 @@ static int yy_get_next_buffer (void)
 	else
 		ret_val = EOB_ACT_CONTINUE_SCAN;
 
-	if ((yy_size_t) ((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
+	if (((yy_n_chars) + number_to_move) > YY_CURRENT_BUFFER_LVALUE->yy_buf_size) {
 		/* Extend the array by 50%, plus the number we really need. */
-		yy_size_t new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
-		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) _w32_realloc((void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf,new_size  );
+		int new_size = (yy_n_chars) + number_to_move + ((yy_n_chars) >> 1);
+		YY_CURRENT_BUFFER_LVALUE->yy_ch_buf = (char *) yyrealloc(
+			(void *) YY_CURRENT_BUFFER_LVALUE->yy_ch_buf, (yy_size_t) new_size  );
 		if ( ! YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
 			YY_FATAL_ERROR( "out of dynamic memory in yy_get_next_buffer()" );
+		/* "- 2" to take care of EOB's */
+		YY_CURRENT_BUFFER_LVALUE->yy_buf_size = (int) (new_size - 2);
 	}
 
 	(yy_n_chars) += number_to_move;
@@ -1479,14 +1718,14 @@ static int yy_get_next_buffer (void)
 
     static yy_state_type yy_get_previous_state (void)
 {
-	register yy_state_type yy_current_state;
-	register char *yy_cp;
+	yy_state_type yy_current_state;
+	char *yy_cp;
     
 	yy_current_state = (yy_start);
 
 	for ( yy_cp = (yytext_ptr) + YY_MORE_ADJ; yy_cp < (yy_c_buf_p); ++yy_cp )
 		{
-		register YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
+		YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
 		if ( yy_accept[yy_current_state] )
 			{
 			(yy_last_accepting_state) = yy_current_state;
@@ -1496,9 +1735,9 @@ static int yy_get_next_buffer (void)
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
 			if ( yy_current_state >= 69 )
-				yy_c = yy_meta[(unsigned int) yy_c];
+				yy_c = yy_meta[yy_c];
 			}
-		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 		}
 
 	return yy_current_state;
@@ -1511,10 +1750,10 @@ static int yy_get_next_buffer (void)
  */
     static yy_state_type yy_try_NUL_trans  (yy_state_type yy_current_state )
 {
-	register int yy_is_jam;
-    	register char *yy_cp = (yy_c_buf_p);
+	int yy_is_jam;
+    	char *yy_cp = (yy_c_buf_p);
 
-	register YY_CHAR yy_c = 1;
+	YY_CHAR yy_c = 1;
 	if ( yy_accept[yy_current_state] )
 		{
 		(yy_last_accepting_state) = yy_current_state;
@@ -1524,30 +1763,32 @@ static int yy_get_next_buffer (void)
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
 		if ( yy_current_state >= 69 )
-			yy_c = yy_meta[(unsigned int) yy_c];
+			yy_c = yy_meta[yy_c];
 		}
-	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
+	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	yy_is_jam = (yy_current_state == 68);
 
-	return yy_is_jam ? 0 : yy_current_state;
+		return yy_is_jam ? 0 : yy_current_state;
 }
 
-    static void yyunput (int c, register char * yy_bp )
+#ifndef YY_NO_UNPUT
+
+    static void yyunput (int c, char * yy_bp )
 {
-	register char *yy_cp;
+	char *yy_cp;
     
     yy_cp = (yy_c_buf_p);
 
-	/* undo effects of setting up _w32_text */
+	/* undo effects of setting up yytext */
 	*yy_cp = (yy_hold_char);
 
 	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
 		{ /* need to shift things up to make room */
 		/* +2 for EOB chars. */
-		register int number_to_move = (yy_n_chars) + 2;
-		register char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
+		int number_to_move = (yy_n_chars) + 2;
+		char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
 					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		register char *source =
+		char *source =
 				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
 
 		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
@@ -1556,7 +1797,7 @@ static int yy_get_next_buffer (void)
 		yy_cp += (int) (dest - source);
 		yy_bp += (int) (dest - source);
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
+			(yy_n_chars) = (int) YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
 
 		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
 			YY_FATAL_ERROR( "flex scanner push-back overflow" );
@@ -1565,13 +1806,15 @@ static int yy_get_next_buffer (void)
 	*--yy_cp = (char) c;
 
     if ( c == '\n' ){
-        --_w32_lineno;
+        --yylineno;
     }
 
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
 }
+
+#endif
 
 #ifndef YY_NO_INPUT
 #ifdef __cplusplus
@@ -1597,7 +1840,7 @@ static int yy_get_next_buffer (void)
 
 		else
 			{ /* need more input */
-			int offset = (yy_c_buf_p) - (yytext_ptr);
+			int offset = (int) ((yy_c_buf_p) - (yytext_ptr));
 			++(yy_c_buf_p);
 
 			switch ( yy_get_next_buffer(  ) )
@@ -1614,14 +1857,14 @@ static int yy_get_next_buffer (void)
 					 */
 
 					/* Reset buffer status. */
-					_w32_restart(_w32_in );
+					yyrestart( yyin );
 
 					/*FALLTHROUGH*/
 
 				case EOB_ACT_END_OF_FILE:
 					{
-					if ( _w32_wrap( ) )
-						return EOF;
+					if ( yywrap(  ) )
+						return 0;
 
 					if ( ! (yy_did_buffer_switch_on_eof) )
 						YY_NEW_FILE;
@@ -1640,12 +1883,12 @@ static int yy_get_next_buffer (void)
 		}
 
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
-	*(yy_c_buf_p) = '\0';	/* preserve _w32_text */
+	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
 
 	if ( c == '\n' )
-		   
-    _w32_lineno++;
+		
+    yylineno++;
 ;
 
 	return c;
@@ -1657,32 +1900,32 @@ static int yy_get_next_buffer (void)
  * 
  * @note This function does not reset the start condition to @c INITIAL .
  */
-    void _w32_restart  (FILE * input_file )
+    void yyrestart  (FILE * input_file )
 {
     
 	if ( ! YY_CURRENT_BUFFER ){
-        _w32_ensure_buffer_stack ();
+        yyensure_buffer_stack ();
 		YY_CURRENT_BUFFER_LVALUE =
-            _w32__create_buffer(_w32_in,YY_BUF_SIZE );
+            yy_create_buffer( yyin, YY_BUF_SIZE );
 	}
 
-	_w32__init_buffer(YY_CURRENT_BUFFER,input_file );
-	_w32__load_buffer_state( );
+	yy_init_buffer( YY_CURRENT_BUFFER, input_file );
+	yy_load_buffer_state(  );
 }
 
 /** Switch to a different input buffer.
  * @param new_buffer The new input buffer.
  * 
  */
-    void _w32__switch_to_buffer  (YY_BUFFER_STATE  new_buffer )
+    void yy_switch_to_buffer  (YY_BUFFER_STATE  new_buffer )
 {
     
 	/* TODO. We should be able to replace this entire function body
 	 * with
-	 *		_w32_pop_buffer_state();
-	 *		_w32_push_buffer_state(new_buffer);
+	 *		yypop_buffer_state();
+	 *		yypush_buffer_state(new_buffer);
      */
-	_w32_ensure_buffer_stack ();
+	yyensure_buffer_stack ();
 	if ( YY_CURRENT_BUFFER == new_buffer )
 		return;
 
@@ -1695,21 +1938,21 @@ static int yy_get_next_buffer (void)
 		}
 
 	YY_CURRENT_BUFFER_LVALUE = new_buffer;
-	_w32__load_buffer_state( );
+	yy_load_buffer_state(  );
 
 	/* We don't actually know whether we did this switch during
-	 * EOF (_w32_wrap()) processing, but the only time this flag
-	 * is looked at is after _w32_wrap() is called, so it's safe
+	 * EOF (yywrap()) processing, but the only time this flag
+	 * is looked at is after yywrap() is called, so it's safe
 	 * to go ahead and always set it.
 	 */
 	(yy_did_buffer_switch_on_eof) = 1;
 }
 
-static void _w32__load_buffer_state  (void)
+static void yy_load_buffer_state  (void)
 {
     	(yy_n_chars) = YY_CURRENT_BUFFER_LVALUE->yy_n_chars;
 	(yytext_ptr) = (yy_c_buf_p) = YY_CURRENT_BUFFER_LVALUE->yy_buf_pos;
-	_w32_in = YY_CURRENT_BUFFER_LVALUE->yy_input_file;
+	yyin = YY_CURRENT_BUFFER_LVALUE->yy_input_file;
 	(yy_hold_char) = *(yy_c_buf_p);
 }
 
@@ -1719,35 +1962,35 @@ static void _w32__load_buffer_state  (void)
  * 
  * @return the allocated buffer state.
  */
-    YY_BUFFER_STATE _w32__create_buffer  (FILE * file, int  size )
+    YY_BUFFER_STATE yy_create_buffer  (FILE * file, int  size )
 {
 	YY_BUFFER_STATE b;
     
-	b = (YY_BUFFER_STATE) _w32_alloc(sizeof( struct yy_buffer_state )  );
+	b = (YY_BUFFER_STATE) yyalloc( sizeof( struct yy_buffer_state )  );
 	if ( ! b )
-		YY_FATAL_ERROR( "out of dynamic memory in _w32__create_buffer()" );
+		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
 	b->yy_buf_size = size;
 
 	/* yy_ch_buf has to be 2 characters longer than the size given because
 	 * we need to put in 2 end-of-buffer characters.
 	 */
-	b->yy_ch_buf = (char *) _w32_alloc(b->yy_buf_size + 2  );
+	b->yy_ch_buf = (char *) yyalloc( (yy_size_t) (b->yy_buf_size + 2)  );
 	if ( ! b->yy_ch_buf )
-		YY_FATAL_ERROR( "out of dynamic memory in _w32__create_buffer()" );
+		YY_FATAL_ERROR( "out of dynamic memory in yy_create_buffer()" );
 
 	b->yy_is_our_buffer = 1;
 
-	_w32__init_buffer(b,file );
+	yy_init_buffer( b, file );
 
 	return b;
 }
 
 /** Destroy the buffer.
- * @param b a buffer created with _w32__create_buffer()
+ * @param b a buffer created with yy_create_buffer()
  * 
  */
-    void _w32__delete_buffer (YY_BUFFER_STATE  b )
+    void yy_delete_buffer (YY_BUFFER_STATE  b )
 {
     
 	if ( ! b )
@@ -1757,27 +2000,27 @@ static void _w32__load_buffer_state  (void)
 		YY_CURRENT_BUFFER_LVALUE = (YY_BUFFER_STATE) 0;
 
 	if ( b->yy_is_our_buffer )
-		_w32_free((void *) b->yy_ch_buf  );
+		yyfree( (void *) b->yy_ch_buf  );
 
-	_w32_free((void *) b  );
+	yyfree( (void *) b  );
 }
 
 /* Initializes or reinitializes a buffer.
  * This function is sometimes called more than once on the same buffer,
- * such as during a _w32_restart() or at EOF.
+ * such as during a yyrestart() or at EOF.
  */
-    static void _w32__init_buffer  (YY_BUFFER_STATE  b, FILE * file )
+    static void yy_init_buffer  (YY_BUFFER_STATE  b, FILE * file )
 
 {
 	int oerrno = errno;
     
-	_w32__flush_buffer(b );
+	yy_flush_buffer( b );
 
 	b->yy_input_file = file;
 	b->yy_fill_buffer = 1;
 
-    /* If b is the current buffer, then _w32__init_buffer was _probably_
-     * called from _w32_restart() or through yy_get_next_buffer.
+    /* If b is the current buffer, then yy_init_buffer was _probably_
+     * called from yyrestart() or through yy_get_next_buffer.
      * In that case, we don't want to reset the lineno or column.
      */
     if (b != YY_CURRENT_BUFFER){
@@ -1794,7 +2037,7 @@ static void _w32__load_buffer_state  (void)
  * @param b the buffer state to be flushed, usually @c YY_CURRENT_BUFFER.
  * 
  */
-    void _w32__flush_buffer (YY_BUFFER_STATE  b )
+    void yy_flush_buffer (YY_BUFFER_STATE  b )
 {
     	if ( ! b )
 		return;
@@ -1814,7 +2057,7 @@ static void _w32__load_buffer_state  (void)
 	b->yy_buffer_status = YY_BUFFER_NEW;
 
 	if ( b == YY_CURRENT_BUFFER )
-		_w32__load_buffer_state( );
+		yy_load_buffer_state(  );
 }
 
 /** Pushes the new state onto the stack. The new state becomes
@@ -1823,14 +2066,14 @@ static void _w32__load_buffer_state  (void)
  *  @param new_buffer The new state.
  *  
  */
-void _w32_push_buffer_state (YY_BUFFER_STATE new_buffer )
+void yypush_buffer_state (YY_BUFFER_STATE new_buffer )
 {
     	if (new_buffer == NULL)
 		return;
 
-	_w32_ensure_buffer_stack();
+	yyensure_buffer_stack();
 
-	/* This block is copied from _w32__switch_to_buffer. */
+	/* This block is copied from yy_switch_to_buffer. */
 	if ( YY_CURRENT_BUFFER )
 		{
 		/* Flush out information for old buffer. */
@@ -1844,8 +2087,8 @@ void _w32_push_buffer_state (YY_BUFFER_STATE new_buffer )
 		(yy_buffer_stack_top)++;
 	YY_CURRENT_BUFFER_LVALUE = new_buffer;
 
-	/* copied from _w32__switch_to_buffer. */
-	_w32__load_buffer_state( );
+	/* copied from yy_switch_to_buffer. */
+	yy_load_buffer_state(  );
 	(yy_did_buffer_switch_on_eof) = 1;
 }
 
@@ -1853,18 +2096,18 @@ void _w32_push_buffer_state (YY_BUFFER_STATE new_buffer )
  *  The next element becomes the new top.
  *  
  */
-void _w32_pop_buffer_state (void)
+void yypop_buffer_state (void)
 {
     	if (!YY_CURRENT_BUFFER)
 		return;
 
-	_w32__delete_buffer(YY_CURRENT_BUFFER );
+	yy_delete_buffer(YY_CURRENT_BUFFER );
 	YY_CURRENT_BUFFER_LVALUE = NULL;
 	if ((yy_buffer_stack_top) > 0)
 		--(yy_buffer_stack_top);
 
 	if (YY_CURRENT_BUFFER) {
-		_w32__load_buffer_state( );
+		yy_load_buffer_state(  );
 		(yy_did_buffer_switch_on_eof) = 1;
 	}
 }
@@ -1872,9 +2115,9 @@ void _w32_pop_buffer_state (void)
 /* Allocates the stack if it does not exist.
  *  Guarantees space for at least one push.
  */
-static void _w32_ensure_buffer_stack (void)
+static void yyensure_buffer_stack (void)
 {
-	int num_to_alloc;
+	yy_size_t num_to_alloc;
     
 	if (!(yy_buffer_stack)) {
 
@@ -1882,15 +2125,15 @@ static void _w32_ensure_buffer_stack (void)
 		 * scanner will even need a stack. We use 2 instead of 1 to avoid an
 		 * immediate realloc on the next call.
          */
-		num_to_alloc = 1;
-		(yy_buffer_stack) = (struct yy_buffer_state**)_w32_alloc
+      num_to_alloc = 1; /* After all that talk, this was set to 1 anyways... */
+		(yy_buffer_stack) = (struct yy_buffer_state**)yyalloc
 								(num_to_alloc * sizeof(struct yy_buffer_state*)
 								);
 		if ( ! (yy_buffer_stack) )
-			YY_FATAL_ERROR( "out of dynamic memory in _w32_ensure_buffer_stack()" );
-								  
+			YY_FATAL_ERROR( "out of dynamic memory in yyensure_buffer_stack()" );
+
 		memset((yy_buffer_stack), 0, num_to_alloc * sizeof(struct yy_buffer_state*));
-				
+
 		(yy_buffer_stack_max) = num_to_alloc;
 		(yy_buffer_stack_top) = 0;
 		return;
@@ -1899,15 +2142,15 @@ static void _w32_ensure_buffer_stack (void)
 	if ((yy_buffer_stack_top) >= ((yy_buffer_stack_max)) - 1){
 
 		/* Increase the buffer to prepare for a possible push. */
-		int grow_size = 8 /* arbitrary grow size */;
+		yy_size_t grow_size = 8 /* arbitrary grow size */;
 
 		num_to_alloc = (yy_buffer_stack_max) + grow_size;
-		(yy_buffer_stack) = (struct yy_buffer_state**)_w32_realloc
+		(yy_buffer_stack) = (struct yy_buffer_state**)yyrealloc
 								((yy_buffer_stack),
 								num_to_alloc * sizeof(struct yy_buffer_state*)
 								);
 		if ( ! (yy_buffer_stack) )
-			YY_FATAL_ERROR( "out of dynamic memory in _w32_ensure_buffer_stack()" );
+			YY_FATAL_ERROR( "out of dynamic memory in yyensure_buffer_stack()" );
 
 		/* zero only the new slots.*/
 		memset((yy_buffer_stack) + (yy_buffer_stack_max), 0, grow_size * sizeof(struct yy_buffer_state*));
@@ -1919,9 +2162,9 @@ static void _w32_ensure_buffer_stack (void)
  * @param base the character buffer
  * @param size the size in bytes of the character buffer
  * 
- * @return the newly allocated buffer state object. 
+ * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE _w32__scan_buffer  (char * base, yy_size_t  size )
+YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )
 {
 	YY_BUFFER_STATE b;
     
@@ -1929,49 +2172,49 @@ YY_BUFFER_STATE _w32__scan_buffer  (char * base, yy_size_t  size )
 	     base[size-2] != YY_END_OF_BUFFER_CHAR ||
 	     base[size-1] != YY_END_OF_BUFFER_CHAR )
 		/* They forgot to leave room for the EOB's. */
-		return 0;
+		return NULL;
 
-	b = (YY_BUFFER_STATE) _w32_alloc(sizeof( struct yy_buffer_state )  );
+	b = (YY_BUFFER_STATE) yyalloc( sizeof( struct yy_buffer_state )  );
 	if ( ! b )
-		YY_FATAL_ERROR( "out of dynamic memory in _w32__scan_buffer()" );
+		YY_FATAL_ERROR( "out of dynamic memory in yy_scan_buffer()" );
 
-	b->yy_buf_size = size - 2;	/* "- 2" to take care of EOB's */
+	b->yy_buf_size = (int) (size - 2);	/* "- 2" to take care of EOB's */
 	b->yy_buf_pos = b->yy_ch_buf = base;
 	b->yy_is_our_buffer = 0;
-	b->yy_input_file = 0;
+	b->yy_input_file = NULL;
 	b->yy_n_chars = b->yy_buf_size;
 	b->yy_is_interactive = 0;
 	b->yy_at_bol = 1;
 	b->yy_fill_buffer = 0;
 	b->yy_buffer_status = YY_BUFFER_NEW;
 
-	_w32__switch_to_buffer(b  );
+	yy_switch_to_buffer( b  );
 
 	return b;
 }
 
-/** Setup the input buffer state to scan a string. The next call to _w32_lex() will
+/** Setup the input buffer state to scan a string. The next call to yylex() will
  * scan from a @e copy of @a str.
  * @param yystr a NUL-terminated string to scan
  * 
  * @return the newly allocated buffer state object.
  * @note If you want to scan bytes that may contain NUL values, then use
- *       _w32__scan_bytes() instead.
+ *       yy_scan_bytes() instead.
  */
-YY_BUFFER_STATE _w32__scan_string (yyconst char * yystr )
+YY_BUFFER_STATE yy_scan_string (const char * yystr )
 {
     
-	return _w32__scan_bytes(yystr,strlen(yystr) );
+	return yy_scan_bytes( yystr, (int) strlen(yystr) );
 }
 
-/** Setup the input buffer state to scan the given bytes. The next call to _w32_lex() will
+/** Setup the input buffer state to scan the given bytes. The next call to yylex() will
  * scan from a @e copy of @a bytes.
  * @param yybytes the byte buffer to scan
  * @param _yybytes_len the number of bytes in the buffer pointed to by @a bytes.
  * 
  * @return the newly allocated buffer state object.
  */
-YY_BUFFER_STATE _w32__scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
+YY_BUFFER_STATE yy_scan_bytes  (const char * yybytes, int  _yybytes_len )
 {
 	YY_BUFFER_STATE b;
 	char *buf;
@@ -1979,19 +2222,19 @@ YY_BUFFER_STATE _w32__scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
 	int i;
     
 	/* Get memory for full buffer, including space for trailing EOB's. */
-	n = _yybytes_len + 2;
-	buf = (char *) _w32_alloc(n  );
+	n = (yy_size_t) (_yybytes_len + 2);
+	buf = (char *) yyalloc( n  );
 	if ( ! buf )
-		YY_FATAL_ERROR( "out of dynamic memory in _w32__scan_bytes()" );
+		YY_FATAL_ERROR( "out of dynamic memory in yy_scan_bytes()" );
 
 	for ( i = 0; i < _yybytes_len; ++i )
 		buf[i] = yybytes[i];
 
 	buf[_yybytes_len] = buf[_yybytes_len+1] = YY_END_OF_BUFFER_CHAR;
 
-	b = _w32__scan_buffer(buf,n );
+	b = yy_scan_buffer( buf, n );
 	if ( ! b )
-		YY_FATAL_ERROR( "bad buffer in _w32__scan_bytes()" );
+		YY_FATAL_ERROR( "bad buffer in yy_scan_bytes()" );
 
 	/* It's okay to grow etc. this buffer, and we should throw it
 	 * away when we're done.
@@ -2005,9 +2248,9 @@ YY_BUFFER_STATE _w32__scan_bytes  (yyconst char * yybytes, int  _yybytes_len )
 #define YY_EXIT_FAILURE 2
 #endif
 
-static void yy_fatal_error (yyconst char* msg )
+static void yynoreturn yy_fatal_error (const char* msg )
 {
-    	(void) fprintf( stderr, "%s\n", msg );
+			fprintf( stderr, "%s\n", msg );
 	exit( YY_EXIT_FAILURE );
 }
 
@@ -2017,14 +2260,14 @@ static void yy_fatal_error (yyconst char* msg )
 #define yyless(n) \
 	do \
 		{ \
-		/* Undo effects of setting up _w32_text. */ \
+		/* Undo effects of setting up yytext. */ \
         int yyless_macro_arg = (n); \
         YY_LESS_LINENO(yyless_macro_arg);\
-		_w32_text[_w32_leng] = (yy_hold_char); \
-		(yy_c_buf_p) = _w32_text + yyless_macro_arg; \
+		yytext[yyleng] = (yy_hold_char); \
+		(yy_c_buf_p) = yytext + yyless_macro_arg; \
 		(yy_hold_char) = *(yy_c_buf_p); \
 		*(yy_c_buf_p) = '\0'; \
-		_w32_leng = yyless_macro_arg; \
+		yyleng = yyless_macro_arg; \
 		} \
 	while ( 0 )
 
@@ -2033,129 +2276,129 @@ static void yy_fatal_error (yyconst char* msg )
 /** Get the current line number.
  * 
  */
-int _w32_get_lineno  (void)
+int yyget_lineno  (void)
 {
-        
-    return _w32_lineno;
+    
+    return yylineno;
 }
 
 /** Get the input stream.
  * 
  */
-FILE *_w32_get_in  (void)
+FILE *yyget_in  (void)
 {
-        return _w32_in;
+        return yyin;
 }
 
 /** Get the output stream.
  * 
  */
-FILE *_w32_get_out  (void)
+FILE *yyget_out  (void)
 {
-        return _w32_out;
+        return yyout;
 }
 
 /** Get the length of the current token.
  * 
  */
-int _w32_get_leng  (void)
+int yyget_leng  (void)
 {
-        return _w32_leng;
+        return yyleng;
 }
 
 /** Get the current token.
  * 
  */
 
-char *_w32_get_text  (void)
+char *yyget_text  (void)
 {
-        return _w32_text;
+        return yytext;
 }
 
 /** Set the current line number.
- * @param line_number
+ * @param _line_number line number
  * 
  */
-void _w32_set_lineno (int  line_number )
+void yyset_lineno (int  _line_number )
 {
     
-    _w32_lineno = line_number;
+    yylineno = _line_number;
 }
 
 /** Set the input stream. This does not discard the current
  * input buffer.
- * @param in_str A readable stream.
+ * @param _in_str A readable stream.
  * 
- * @see _w32__switch_to_buffer
+ * @see yy_switch_to_buffer
  */
-void _w32_set_in (FILE *  in_str )
+void yyset_in (FILE *  _in_str )
 {
-        _w32_in = in_str ;
+        yyin = _in_str ;
 }
 
-void _w32_set_out (FILE *  out_str )
+void yyset_out (FILE *  _out_str )
 {
-        _w32_out = out_str ;
+        yyout = _out_str ;
 }
 
-int _w32_get_debug  (void)
+int yyget_debug  (void)
 {
-        return _w32__flex_debug;
+        return yy_flex_debug;
 }
 
-void _w32_set_debug (int  bdebug )
+void yyset_debug (int  _bdebug )
 {
-        _w32__flex_debug = bdebug ;
+        yy_flex_debug = _bdebug ;
 }
 
 static int yy_init_globals (void)
 {
         /* Initialization is the same as for the non-reentrant scanner.
-     * This function is called from _w32_lex_destroy(), so don't allocate here.
+     * This function is called from yylex_destroy(), so don't allocate here.
      */
 
-    /* We do not touch _w32_lineno unless the option is enabled. */
-    _w32_lineno =  1;
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
     
-    (yy_buffer_stack) = 0;
+    (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
-    (yy_c_buf_p) = (char *) 0;
+    (yy_c_buf_p) = NULL;
     (yy_init) = 0;
     (yy_start) = 0;
 
 /* Defined in main.c */
 #ifdef YY_STDINIT
-    _w32_in = stdin;
-    _w32_out = stdout;
+    yyin = stdin;
+    yyout = stdout;
 #else
-    _w32_in = (FILE *) 0;
-    _w32_out = (FILE *) 0;
+    yyin = NULL;
+    yyout = NULL;
 #endif
 
     /* For future reference: Set errno on error, since we are called by
-     * _w32_lex_init()
+     * yylex_init()
      */
     return 0;
 }
 
-/* _w32_lex_destroy is for both reentrant and non-reentrant scanners. */
-int _w32_lex_destroy  (void)
+/* yylex_destroy is for both reentrant and non-reentrant scanners. */
+int yylex_destroy  (void)
 {
     
     /* Pop the buffer stack, destroying each element. */
 	while(YY_CURRENT_BUFFER){
-		_w32__delete_buffer(YY_CURRENT_BUFFER  );
+		yy_delete_buffer( YY_CURRENT_BUFFER  );
 		YY_CURRENT_BUFFER_LVALUE = NULL;
-		_w32_pop_buffer_state();
+		yypop_buffer_state();
 	}
 
 	/* Destroy the stack itself. */
-	_w32_free((yy_buffer_stack) );
+	yyfree((yy_buffer_stack) );
 	(yy_buffer_stack) = NULL;
 
     /* Reset the globals. This is important in a non-reentrant scanner so the next time
-     * _w32_lex() is called, initialization will occur. */
+     * yylex() is called, initialization will occur. */
     yy_init_globals( );
 
     return 0;
@@ -2166,18 +2409,19 @@ int _w32_lex_destroy  (void)
  */
 
 #ifndef yytext_ptr
-static void yy_flex_strncpy (char* s1, yyconst char * s2, int n )
+static void yy_flex_strncpy (char* s1, const char * s2, int n )
 {
-	register int i;
+		
+	int i;
 	for ( i = 0; i < n; ++i )
 		s1[i] = s2[i];
 }
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * s )
+static int yy_flex_strlen (const char * s )
 {
-	register int n;
+	int n;
 	for ( n = 0; s[n]; ++n )
 		;
 
@@ -2185,13 +2429,14 @@ static int yy_flex_strlen (yyconst char * s )
 }
 #endif
 
-void *_w32_alloc (yy_size_t  size )
+void *yyalloc (yy_size_t  size )
 {
-	return (void *) malloc( size );
+			return malloc(size);
 }
 
-void *_w32_realloc  (void * ptr, yy_size_t  size )
+void *yyrealloc  (void * ptr, yy_size_t  size )
 {
+		
 	/* The cast to (char *) in the following accommodates both
 	 * implementations that use char* generic pointers, and those
 	 * that use void* generic pointers.  It works with the latter
@@ -2199,12 +2444,12 @@ void *_w32_realloc  (void * ptr, yy_size_t  size )
 	 * any pointer type to void*, and deal with argument conversions
 	 * as though doing an assignment.
 	 */
-	return (void *) realloc( (char *) ptr, size );
+	return realloc(ptr, size);
 }
 
-void _w32_free (void * ptr )
+void yyfree (void * ptr )
 {
-	free( (char *) ptr );	/* see _w32_realloc() for (char *) cast */
+			free( (char *) ptr );	/* see yyrealloc() for (char *) cast */
 }
 
 #define YYTABLES_NAME "yytables"
@@ -2212,13 +2457,12 @@ void _w32_free (void * ptr )
 #line 262 "lang.l"
 
 
-
 /*---------------------------------------------------------------------*/
 
 /**
- * terminate _w32_lex() when EOF reached.
+ * terminate yylex() when EOF reached.
  */
-int _w32_wrap (void)
+int yywrap (void)
 {
   return (1);
 }
@@ -2366,7 +2610,7 @@ static void __lex_destroy (void)
   free (yy_buffer_stack);
   yy_buffer_stack = NULL;
 #else
-  _w32__delete_buffer (YY_CURRENT_BUFFER);
+  yy_delete_buffer (YY_CURRENT_BUFFER);
 #endif
 }
 
@@ -2444,8 +2688,8 @@ void lang_init (const char *value)
 
   if (!setjmp(bail_out))
   {
-    _w32_in = langf;
-    _w32_lex();
+    yyin = langf;
+    yylex();
 
     if (!SortLanguageEntries(lang.entries))
     {

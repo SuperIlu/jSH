@@ -15,3 +15,7 @@ duktape-2.5.0/djgpp/
 *.d
 dzcomm/obj/djgpp/asmdef.s
 doc/
+dexport.c
+*.dxe
+jSH-cppcheck-build-dir/
+*.undef

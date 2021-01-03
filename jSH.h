@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2021 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.5         //!< version number
-#define JSH_VERSION_STR "V0.5"  //!< version number as string
+#define JSH_VERSION 0.6         //!< version number
+#define JSH_VERSION_STR "V0.6"  //!< version number as string
 
 #define JSBOOT_DIR "JSBOOT/"  //!< directory with boot files.
 
@@ -136,5 +136,6 @@ extern FILE *logfile;  //!< file for log output.
 /***********************
 ** exported functions **
 ***********************/
+extern void jsh_register_shutdown(void (*function)(void));
 
 #endif  // __JSH_H__

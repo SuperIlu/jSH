@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <strings.h>
+#include <stdlib.h>
+#include <dpmi.h>
+#include <sys/stat.h>
+#include <sys/movedata.h>
+#include <sys/farptr.h>
+#include <sys/exceptn.h>
+#include <pc.h>
+#include <time.h>
+#include <bios.h>
+#include <signal.h>
+#include <ctype.h>
+#include <go32.h>
+
+#include "zipfile.h"
+
+// stdio/files
+closedir
+fclose
+fflush
+fgetc
+fgets
+fopen
+fprintf
+fputc
+fputs
+fread
+fseek
+ftell
+fwrite
+getc
+mkdir
+opendir
+printf
+putc
+readdir
+rename
+rmdir
+snprintf
+sprintf
+stat
+strerror
+unlink
+
+// time
+clock
+localtime
+sleep
+strftime
+
+// copy/move/strings
+atoi
+bzero
+memcpy
+strcasecmp
+strchr
+strcpy
+stricmp
+strncasecmp
+strncpy
+strtol
+
+// memory/system
+atexit
+calloc
+free
+getenv
+malloc
+raise
+realloc
+realloc
+signal
+
+// lowlevel
+__dj_ctype_flags
+__djgpp_ds_alias
+__dpmi_allocate_dos_memory
+__dpmi_free_dos_memory
+__dpmi_get_protected_mode_interrupt_vector
+__dpmi_int
+__dpmi_int
+__dpmi_set_protected_mode_interrupt_vector
+_farpeekb
+_farpeekw
+_get_dos_version
+_go32_dpmi_lock_code
+_go32_dpmi_lock_data
+_go32_info_block
+biosprint
+dosmemget
+dosmemput
+inportb
+inportl
+inportw
+outportb
+outportl
+outportw
+
+// zipfile
+check_zipfile1
+check_zipfile2
+read_zipfile1
+read_zipfile2
+
+// jSH
+logfile

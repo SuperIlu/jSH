@@ -1,3 +1,8 @@
+**V0.6 native library loading support**
+* added support to load DXEs during runtime to extend functionality
+* moved comport to a loadable library
+* re-added KbHit()
+
 **V0.5 backport to musj**
 * switched back to MuJS for DOjS compatibility
 * added watt32 TCP/IP support

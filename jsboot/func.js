@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2020 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2021 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,14 @@ No licensing notice is necessary, but if you need one, you can use:
 */
 
 /**
- * @property {boolean} DEBUG enable/disable Debug() output.
+ * General functions.
+ * @module general
  */
-DEBUG = true;
+
+/**
+* @property {boolean} DEBUG enable/disable Debug() output.
+*/
+DEBUG = false;
 
 /**
  * @property {string} ZIP_DELIM delimiter between ZIP filename and entry name.
@@ -218,6 +223,7 @@ if (!String.prototype.endsWith) {
 
 /**
  * create stop watch for benchmarking
+ * @class
  */
 function StopWatch() {
 	this.Reset();

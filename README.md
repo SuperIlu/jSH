@@ -60,7 +60,7 @@ I used the following command lines to update/install my dependencies:
 ```bash
 sudo apt-get update
 sudo apt-get dist-upgrade
-sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm python-yaml zip dos2unix
+sudo apt-get install bison flex curl gcc g++ make texinfo zlib1g-dev g++ unzip htop screen git bash-completion build-essential npm python-yaml zip dos2unix python3
 sudo npm install -g jsdoc
 sudo npm install -g better-docs
 ```
@@ -72,6 +72,8 @@ cd build-djgpp
 export DJGPP_PREFIX=/home/ilu/djgpp
 ./build-djgpp.sh 7.2.0
 ```
+
+Make sure `dxe3gen` and `dxe3res` are installed as well and set `DJPATH` permanently to your installation directory of DJGPP.
 
 ## Getting & Compiling jSH
 Open a shell/command line in the directory where you want the source to reside.
@@ -85,6 +87,17 @@ Open the Makefile in a text editor and change the path to DJGPP according to you
 
 Now you are ready to compile jSH with `make clean all`. This might take some time as the dependencies are quite a large.
 `make distclean` will clean dependencies as well. `make zip` will create the distribution ZIP and `make doc` will re-create the HTML help.
+
+## Creating native libraries (DXEs)
+Have a look at the example libraries in `test.dxelib/` and `test2.dxelib/`. Some rules:
+* A library called `foo` must have the filename `foo.dxe` and must provide at least the function `void init_foo(js_State *J)`. This function is called when the library is loaded and can then register global variables/objects/classes/function in the Javascript runtime.
+* The library may also provide the function `void shutdown_foo(void)` (this is completely optional). This will get called during shutdown and can perform cleanup.
+* All libraries in the sourcetree will be build by the `make all` target if their dir-name ends with `.dxelib`. The Makefile in the directory must provide the targets all, clean and distclean (see examples).
+* Libraries should use the `Makefile.dxemk` whenever possible.
+* In theory it should be possible to compile additional native libraries without re-compiling `jSH.EXE` if the same compiler is used (see above). 
+* Native libraries may use all functions from `mujs.h` and all functions in `dxetemplate.txt`. If additional functions are needed these need to be included in the template and `jSH.EXE` must be recompiled!
+* When libraries are compiled the exports provided by jSH are checked against the used functions (see `check_exports.py`) and the build fails if there are symbols missing.
+* Feel free to provide your native libraries and/or changes to `dxetemplate.txt` for inclusion in the jSH GitHub repository (MIT license please)...
 
 # History
 See the [changelog](/CHANGELOG.md) for the projects history.

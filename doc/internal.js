@@ -23,6 +23,13 @@ JSH_VERSION = 0.0;
  */
 
 /**
+ * Load and initialize a native library (DXE). Native libraries must reside in the directory jSH.EXE was started from!
+ * 
+ * @param {string} name the base name of the library (e.g. if the library is called "foo.dxe" on disk you need to call LoadLibrary("foo")).
+ */
+function LoadLibrary(name) { }
+
+/**
  * Write data to stdout.
  * @param {string} s the string to print.
  */
