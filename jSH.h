@@ -128,14 +128,27 @@ SOFTWARE.
 #else
 #define NEW_OBJECT_PREP(j)
 #endif
+
+/*****************
+** struct/types **
+*****************/
+typedef struct __library_t {
+    struct __library_t *next;
+    const char *name;
+    void *handle;
+    void (*shutdown)(void);
+} library_t;
+
 /*********************
 ** global variables **
 *********************/
 extern FILE *logfile;  //!< file for log output.
+extern library_t *jsh_loaded_libraries;
 
 /***********************
 ** exported functions **
 ***********************/
-extern void jsh_register_shutdown(void (*function)(void));
+extern bool jsh_register_library(const char *name, void *handle, void (*shutdown)(void));
+extern bool jsh_check_library(const char *name);
 
 #endif  // __JSH_H__

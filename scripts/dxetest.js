@@ -1,3 +1,5 @@
+Println(JSON.stringify(GetLoadedLibraries()));
+
 // test first library
 try {
 	Println(HelloWorld("FAILS"));
@@ -8,6 +10,8 @@ try {
 LoadLibrary("dxetest");
 
 Println(HelloWorld("WORKS"));
+
+Println(JSON.stringify(GetLoadedLibraries()));
 
 
 // test second library
@@ -20,3 +24,8 @@ try {
 LoadLibrary("dxetest2");
 
 Println(MakeString());
+
+Println(JSON.stringify(GetLoadedLibraries()));
+
+// test sanity check
+LoadLibrary("dxetest");

@@ -1,3 +1,8 @@
+**V0.7 more modules support**
+* added SQLite module
+* added neuronal network module
+* added libcpuid
+
 **V0.6 native library loading support**
 * added support to load DXEs during runtime to extend functionality
 * moved comport to a loadable library

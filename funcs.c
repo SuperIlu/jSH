@@ -572,7 +572,7 @@ static void f_StringToBytes(js_State *J) {
  * This works like Function(), but it only takes one parameter and the source of the parsed string can be provided.
  * NamedFunction(func_param, func_src, func_source_filename):function
  *
- * @param J
+ * @param J VM state.
  */
 static void f_NamedFunction(js_State *J) {
     js_Buffer *sb = NULL;
@@ -611,6 +611,11 @@ static void *dxe_res(const char *symname) {
 
 #define LL_BUFFER_SIZE 2014
 
+/**
+ * @brief load a native library from disk, call it's init function and  register it in the list of loaded libraries.
+ *
+ * @param J VM state.
+ */
 static void f_LoadLibrary(js_State *J) {
     int needed;
     char mod_name[LL_BUFFER_SIZE];
@@ -623,6 +628,12 @@ static void f_LoadLibrary(js_State *J) {
         return;
     }
     const char *modname = js_tostring(J, 1);
+
+    // bail out if this is already loaded
+    if (jsh_check_library(modname)) {
+        js_error(J, "%s is already loaded!", modname);
+        return;
+    }
 
     // set resolver error function
     _dlsymresolver = dxe_res;
@@ -682,9 +693,29 @@ static void f_LoadLibrary(js_State *J) {
     func_ptr_cast_shutdown.from = dlsym(mod, shutdown_name);
     void (*mod_shutdown)(void) = func_ptr_cast_shutdown.to;
 
-    // check for valid pointer
-    if (func_ptr_cast_shutdown.from) {
-        jsh_register_shutdown(mod_shutdown);
+    // register library
+    if (!jsh_register_library(modname, mod, mod_shutdown)) {
+        js_error(J, "Out of memory while registering native library. System will be unstable now!");
+        return;
+    }
+}
+
+/**
+ * @brief get an array with the names of loaded libraries.
+ *
+ * @param J VM state.
+ */
+static void f_GetLoadedLibraries(js_State *J) {
+    js_newarray(J);
+    if (jsh_loaded_libraries) {
+        library_t *chain = jsh_loaded_libraries;
+        int idx = 0;
+        while (chain) {
+            js_pushstring(J, chain->name);
+            js_setindex(J, -2, idx);
+            idx++;
+            chain = chain->next;
+        }
     }
 }
 
@@ -747,4 +778,5 @@ void init_funcs(js_State *J, int argc, char *argv[], int idx) {
     NFUNCDEF(J, GetFSType, 1);
 
     NFUNCDEF(J, LoadLibrary, 1);
+    NFUNCDEF(J, GetLoadedLibraries, 0);
 }

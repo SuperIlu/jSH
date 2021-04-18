@@ -19,3 +19,4 @@ dexport.c
 *.dxe
 jSH-cppcheck-build-dir/
 *.undef
+dexport.c

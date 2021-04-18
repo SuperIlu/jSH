@@ -14,8 +14,21 @@
 #include <signal.h>
 #include <ctype.h>
 #include <go32.h>
+#include <tcp.h>
+#include <fcntl.h>
+#include <math.h>
+#include <assert.h>
 
 #include "zipfile.h"
+
+// symbols without include file from libgcc
+extern BOOL _watt_do_exit;
+extern long __divdi3 (long A, long B);
+extern long __moddi3 (long A, long B);
+extern unsigned long __udivdi3 (unsigned long A, unsigned long B);
+extern unsigned long __udivmoddi4 (unsigned long A, unsigned long B, unsigned long *C);
+extern long __divmoddi4 (long A, long B, long *C);
+extern unsigned long __umoddi3 (unsigned long A, unsigned long B);
 
 // stdio/files
 closedir
@@ -107,3 +120,58 @@ read_zipfile2
 
 // jSH
 logfile
+
+
+__divdi3
+__divmoddi4
+__dj_huge_valf
+__dj_assert
+__dj_stdout
+__moddi3
+__udivdi3
+__udivmoddi4
+__umoddi3
+access
+close
+errno
+fchmod
+fchown
+fcntl
+fsync
+ftruncate
+getcwd
+geteuid
+getpid
+gettimeofday
+lseek
+lstat
+memcmp
+memmove
+open
+read
+putchar
+puts
+readlink
+strcmp
+strcspn
+strlen
+strncmp
+strrchr
+time
+utimes
+write
+memset
+fstat
+
+rand
+perror
+fscanf
+__fpclassifyd
+srand
+
+vsnprintf
+__dj_stdin
+strdup
+sscanf
+__dj_stderr
+strstr

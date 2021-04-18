@@ -30,6 +30,13 @@ JSH_VERSION = 0.0;
 function LoadLibrary(name) { }
 
 /**
+ * Get a list of loaded native libraries.
+ * 
+ * @return {string[]} a list of loaded libraries.
+ */
+function GetLoadedLibraries() { }
+
+/**
  * Write data to stdout.
  * @param {string} s the string to print.
  */

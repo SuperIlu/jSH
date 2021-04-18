@@ -12,11 +12,14 @@ with open(sys.argv[1], "r") as template:
         with open(sys.argv[3], "w") as outfile:
             # create lists with includes and exports
             exports = []
+            prototypes = []
             includes = []
             for l in template:
                 l = l.strip()
                 if l.startswith("#"):
                     includes.append(l)
+                elif l.startswith("extern "):
+                    prototypes.append(l)
                 elif not l.startswith("//") and len(l) > 0:
                     exports.append(l)
 
@@ -33,11 +36,19 @@ with open(sys.argv[1], "r") as template:
             )
 
             # write includes
+            outfile.write("\n")
             for i in includes:
                 outfile.write(i)
                 outfile.write("\n")
 
+            # write prototypes
+            outfile.write("\n")
+            for i in prototypes:
+                outfile.write(i)
+                outfile.write("\n")
+
             # start symbol table
+            outfile.write("\n")
             outfile.write(
                 """
 

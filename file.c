@@ -91,6 +91,8 @@ static void new_File(js_State *J) {
     f->file = fopen(fname, mode);
     if (!f->file) {
         js_error(J, "cannot open file '%s': %s", fname, strerror(errno));
+        free(f);
+        return;
     }
 
     js_currentfunction(J);

@@ -27,6 +27,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 #include "lowlevel.h"
 #include "watt.h"
@@ -39,11 +40,6 @@ SOFTWARE.
 
 #define TICK_DELAY 10
 
-typedef struct __shutdown_t {
-    struct __shutdown_t *next;
-    void (*function)(void);
-} shutdown_t;
-
 /**************
 ** Variables **
 **************/
@@ -51,7 +47,7 @@ FILE *logfile;  //!< logfile for LOGF(), LOG(), DEBUG() DEBUGF() and Print()
 
 const char *lastError;
 
-shutdown_t *jsh_shutdown_chain = NULL;
+library_t *jsh_loaded_libraries = NULL;
 
 /*********************
 ** static functions **
@@ -87,17 +83,28 @@ static void Report(js_State *J, const char *message) {
 }
 
 /**
- * @brief call all registered shutdown functions.
+ * @brief shutdown all registered libraries
  */
-static void jsh_run_shutdown_chain() {
-    if (jsh_shutdown_chain) {
-        shutdown_t *chain = jsh_shutdown_chain;
-        DEBUGF("%p: Calling shutdown function %p\n", chain, chain->function);
-        chain->function();
-        while (chain->next) {
+static void jsh_shutdown_libraries() {
+    if (jsh_loaded_libraries) {
+        library_t *chain = jsh_loaded_libraries;
+        while (chain) {
+            DEBUGF("%p: Library shutdown for %s. Shutdown function %p\n", chain, chain->name, chain->shutdown);
+
+            // call shutdown if any
+            if (chain->shutdown) {
+                chain->shutdown();
+            }
+            // free mem for the name
+            free((void *)chain->name);
+            chain->name = NULL;
+            // close the DXE
+            dlclose(chain->handle);
+            chain->handle = NULL;
+            // remember current, advance to next and free current mem
+            library_t *last = chain;
             chain = chain->next;
-            DEBUGF("%p: Calling shutdown function %p\n", chain, chain->function);
-            chain->function();
+            free(last);
         }
     }
 }
@@ -142,8 +149,8 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
     lastError = NULL;
     js_dofile(J, script);
     LOG("jSH Shutdown...\n");
-
-    jsh_run_shutdown_chain();
+    js_freestate(J);
+    jsh_shutdown_libraries();
     fclose(logfile);
 
     if (lastError) {
@@ -159,24 +166,63 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
 ** exported functions **
 ***********************/
 /**
- * @brief register a function to be called when the js interpretation ends.
+ * @brief register a library.
  *
- * @param function function to be called
+ * @param name pointer to a name. This function will make a copy of the string.
+ * @param handle the handle returned by dlopen().
+ * @param shutdown function to be called for shutdown or NULL.
+ *
+ * @return true if registration succeeded, else false.
  */
-void jsh_register_shutdown(void (*function)(void)) {
-    if (function) {
-        DEBUGF("Registering shutdown function %p\n", function);
-        shutdown_t *new_entry = calloc(1, sizeof(shutdown_t));
-        if (new_entry) {
-            // insert as first entry
-            DEBUGF("Created %p\n", new_entry);
-            new_entry->function = function;
-            new_entry->next = jsh_shutdown_chain;
-            jsh_shutdown_chain = new_entry;
-        } else {
-            LOGF("WARNING: Could not register shutdown hook for loaded library! Continuing nonetheless...");
+bool jsh_register_library(const char *name, void *handle, void (*shutdown)(void)) {
+    DEBUGF("Registering library %s. Shutdown function %p\n", shutdown);
+
+    // get new entry
+    library_t *new_entry = calloc(1, sizeof(library_t));
+    if (!new_entry) {
+        LOGF("WARNING: Could not register shutdown hook for loaded library %s!", name);
+        return false;
+    }
+
+    // copy name
+    char *name_copy = malloc(strlen(name) + 1);
+    if (!name_copy) {
+        LOGF("WARNING: Could not register shutdown hook for loaded library %s!", name);
+        free(new_entry);
+        return false;
+    }
+    strcpy(name_copy, name);
+
+    // store values
+    DEBUGF("Created %p\n", new_entry);
+    new_entry->name = name_copy;
+    new_entry->handle = handle;
+    new_entry->shutdown = shutdown;
+
+    // insert at start of list
+    new_entry->next = jsh_loaded_libraries;
+    jsh_loaded_libraries = new_entry;
+    return true;
+}
+
+/**
+ * @brief check if a given library is already registered.
+ *
+ * @param name name to search for.
+ * @return true if the librari is already in the list, else false.
+ */
+bool jsh_check_library(const char *name) {
+    if (jsh_loaded_libraries) {
+        library_t *chain = jsh_loaded_libraries;
+        while (chain) {
+            if (strcmp(name, chain->name) == 0) {
+                return true;
+            }
+
+            chain = chain->next;
         }
     }
+    return false;
 }
 
 /**
