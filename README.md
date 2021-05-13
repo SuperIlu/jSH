@@ -1,5 +1,5 @@
 # jSH
-![jSH logo](/doc/jSH.png)
+![jSH logo](doc/jSH.png)
 ## A Javascript scripting engine for DOS
 [jSH](https://github.com/SuperIlu/jSH) is a script interpreter for DOS based operating systems like MS-DOS, [FreeDOS](http://freedos.org/) or any DOS based Windows (like 95, 98, ME). The focus is on file io and text mode user interfaces.
 
@@ -47,7 +47,7 @@ If you run it on real hardware you need at least a **80386 with 4MB**. I recomme
 The API is documented in the [doc/html/](http://htmlpreview.github.io/?https://github.com/SuperIlu/jSH/blob/master/doc/html/index.html) directory.
 
 For now jSH comes only with a single bigger example: *JsCommander*. A minimal file manager in the style of the well known Norton Commander.
-![jc screenshot](/doc/JsCommander.PNG)
+![jc screenshot](doc/JsCommander.png)
 
 
 # Compilation

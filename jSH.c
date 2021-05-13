@@ -57,6 +57,9 @@ library_t *jsh_loaded_libraries = NULL;
  */
 static void usage() {
     fputs("Usage: JSH.EXE <script> [parameter]\n", stderr);
+    fputs("    -d             : Set global DEBUG variable to true.\n", stderr);
+    fputs("    -n             : Disable JSLOG.TXT.\n", stderr);
+    fputs("    -l <file>      : Redirect JSLOG.TXT to <file>.\n", stderr);
     fputs("\n", stderr);
     fputs("This is jSH " JSH_VERSION_STR "\n", stderr);
     fputs("(c) 2019-2021 by Andre Seidelt <superilu@yahoo.com> and others.\n", stderr);
@@ -115,11 +118,19 @@ static void jsh_shutdown_libraries() {
  * @param script the script filename.
  * @param debug enable debug output.
  */
-static void run_script(char *script, bool debug, int argc, char *argv[], int idx) {
+static void run_script(char *script, bool debug, int argc, char *argv[], int idx, char *logfile_name) {
     js_State *J;
     // create logfile
-    logfile = fopen(LOGFILE, "a");
-    setbuf(logfile, 0);
+    if (logfile_name) {
+        logfile = fopen(logfile_name, "a");
+        if (!logfile) {
+            fprintf(stderr, "Could not open/create logfile %s.\n", logfile_name);
+            exit(1);
+        }
+        setbuf(logfile, 0);
+    } else {
+        logfile = NULL;
+    }
 
     // create VM
     J = js_newstate(NULL, NULL, 0);
@@ -143,6 +154,7 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
     js_dofile(J, JSINC_FUNC);
     js_dofile(J, JSINC_FILE);
 
+    // overwrites DEBUG property from func.js
     PROPDEF_B(J, debug, "DEBUG");
 
     // load main file and run it
@@ -151,7 +163,9 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
     LOG("jSH Shutdown...\n");
     js_freestate(J);
     jsh_shutdown_libraries();
-    fclose(logfile);
+    if (logfile) {
+        fclose(logfile);
+    }
 
     if (lastError) {
         fputs(lastError, stdout);
@@ -236,13 +250,21 @@ bool jsh_check_library(const char *name) {
 int main(int argc, char **argv) {
     char *script = NULL;
     bool debug = false;
+    bool do_logfile = true;
+    char *logfile_name = LOGFILE;
     int opt;
 
     // check parameters
-    while ((opt = getopt(argc, argv, "d")) != -1) {
+    while ((opt = getopt(argc, argv, "dnl:")) != -1) {
         switch (opt) {
             case 'd':
                 debug = true;
+                break;
+            case 'n':
+                do_logfile = false;
+                break;
+            case 'l':
+                logfile_name = optarg;
                 break;
             default: /* '?' */
                 usage();
@@ -259,7 +281,12 @@ int main(int argc, char **argv) {
     }
     optind++;
 
-    run_script(script, debug, argc, argv, optind);
+    // 'n' takes preceedence over redirection
+    if (!do_logfile) {
+        logfile_name = NULL;
+    }
+
+    run_script(script, debug, argc, argv, optind, logfile_name);
 
     exit(0);
 }

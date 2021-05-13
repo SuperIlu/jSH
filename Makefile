@@ -98,6 +98,7 @@ doc:
 	rm -rf $(DOCDIR)
 	mkdir -p $(DOCDIR)
 	cd doc && jsdoc -c jsdoc.conf.json -d ../$(DOCDIR)
+	cp doc/*.png $(DOCDIR)
 
 init:
 	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src

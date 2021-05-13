@@ -35,6 +35,7 @@ SOFTWARE.
 
 #include <sys/dxe.h>
 #include <dlfcn.h>
+#include <sys/exceptn.h>
 
 #include "zipfile.h"
 
@@ -214,49 +215,53 @@ static void f_Stat(js_State *J) {
 }
 
 /**
- * @brief print to stdout with newline.
+ * @brief print to logfile with newline.
  * Println(t1, t2, ...)
  *
  * @param J the JS context.
  */
 static void f_Debugln(js_State *J) {
-    js_getglobal(J, "DEBUG");
-    bool dbg = js_toboolean(J, -1);
-    js_pop(J, 1);
+    if (logfile) {
+        js_getglobal(J, "DEBUG");
+        bool dbg = js_toboolean(J, -1);
+        js_pop(J, 1);
 
-    if (dbg) {
-        int i, top = js_gettop(J);
-        for (i = 1; i < top; ++i) {
-            const char *s = js_tostring(J, i);
-            if (i > 1) {
-                putc(' ', LOGSTREAM);
+        if (dbg) {
+            int i, top = js_gettop(J);
+            for (i = 1; i < top; ++i) {
+                const char *s = js_tostring(J, i);
+                if (i > 1) {
+                    putc(' ', logfile);
+                }
+                fputs(s, logfile);
             }
-            fputs(s, LOGSTREAM);
+            putc('\n', logfile);
         }
-        putc('\n', LOGSTREAM);
     }
     js_pushundefined(J);
 }
 
 /**
- * @brief print to stdout.
+ * @brief print to logfile.
  * Print(t1, t2, ...)
  *
  * @param J the JS context.
  */
 static void f_Debug(js_State *J) {
-    js_getglobal(J, "DEBUG");
-    bool dbg = js_toboolean(J, -1);
-    js_pop(J, 1);
+    if (logfile) {
+        js_getglobal(J, "DEBUG");
+        bool dbg = js_toboolean(J, -1);
+        js_pop(J, 1);
 
-    if (dbg) {
-        int i, top = js_gettop(J);
-        for (i = 1; i < top; ++i) {
-            const char *s = js_tostring(J, i);
-            if (i > 1) {
-                putc(' ', LOGSTREAM);
+        if (dbg) {
+            int i, top = js_gettop(J);
+            for (i = 1; i < top; ++i) {
+                const char *s = js_tostring(J, i);
+                if (i > 1) {
+                    putc(' ', logfile);
+                }
+                fputs(s, logfile);
             }
-            fputs(s, LOGSTREAM);
         }
     }
     js_pushundefined(J);
@@ -296,8 +301,8 @@ static void f_Print(js_State *J) {
             putc(' ', stdout);
         }
         fputs(s, stdout);
-        fflush(stdout);
     }
+    fflush(stdout);
     js_pushundefined(J);
 }
 
@@ -307,7 +312,13 @@ static void f_Print(js_State *J) {
  *
  * @param J the JS context.
  */
-static void f_Quit(js_State *J) { exit(0); }
+static void f_Quit(js_State *J) {
+    int code = 0;
+    if (js_isnumber(J, 1)) {
+        code = js_touint16(J, 1);
+    }
+    exit(code);
+}
 
 /**
  * @brief do garbage collection.
@@ -719,6 +730,13 @@ static void f_GetLoadedLibraries(js_State *J) {
     }
 }
 
+/**
+ * @brief set CTRL-C/CTRL-BREAK handling.
+ *
+ * @param J the JS context.
+ */
+static void f_CtrlBreak(js_State *J) { __djgpp_set_ctrl_c(js_toboolean(J, 1) ? 1 : 0); }
+
 /***********************
 ** exported functions **
 ***********************/
@@ -765,7 +783,8 @@ void init_funcs(js_State *J, int argc, char *argv[], int idx) {
 
     NFUNCDEF(J, Debug, 0);
     NFUNCDEF(J, Debugln, 0);
-    NFUNCDEF(J, Quit, 0);
+    NFUNCDEF(J, Quit, 1);
+    NFUNCDEF(J, CtrlBreak, 1);
 
     NFUNCDEF(J, NoSound, 0);
     NFUNCDEF(J, Sound, 1);

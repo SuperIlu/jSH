@@ -422,6 +422,13 @@ function LPTStatus(port) {
 }
 
 /**
+ * Exit jSH.
+ * 
+ * @param {number} [code] exit code to return to DOS.
+ */
+function Exit(code) { Quit(code); }
+
+/**
  * parallel port IO register definitions.
  * 
  *  [*] CONTROL.BIDI must be set to 1 in order to read from DATA. Not supported by all ports!

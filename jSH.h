@@ -33,13 +33,12 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.6         //!< version number
-#define JSH_VERSION_STR "V0.6"  //!< version number as string
+#define JSH_VERSION 0.8         //!< version number
+#define JSH_VERSION_STR "V0.8"  //!< version number as string
 
 #define JSBOOT_DIR "JSBOOT/"  //!< directory with boot files.
 
 #define LOGFILE "JSLOG.TXT"  //!< filename for logfile
-#define LOGSTREAM logfile    //!< output stream for logging on DOS
 
 #define JS_ENOMEM(j) js_error(j, "Out of memory")   //!< use always the same message when memory runs out
 #define JS_ENOARR(j) js_error(j, "Array expected")  //!< use always the same message when array expected
@@ -83,40 +82,32 @@ SOFTWARE.
     }
 
 //! printf-style write info to logfile/console
-#define LOGF(str, ...)                                  \
-    {                                                   \
-        fprintf(LOGSTREAM, SYSINFO str, ##__VA_ARGS__); \
-        fflush(LOGSTREAM);                              \
+#define LOGF(str, ...)                                \
+    if (logfile) {                                    \
+        fprintf(logfile, SYSINFO str, ##__VA_ARGS__); \
+        fflush(logfile);                              \
     }
 
 //! write info to logfile/console
-#define LOG(str)                       \
-    {                                  \
-        fputs(SYSINFO str, LOGSTREAM); \
-        fflush(LOGSTREAM);             \
-    }
-
-//! write info to logfile/console
-#define LOGV(str)                  \
-    {                              \
-        fputs(SYSINFO, LOGSTREAM); \
-        fputs(str, LOGSTREAM);     \
-        fflush(LOGSTREAM);         \
+#define LOG(str)                     \
+    if (logfile) {                   \
+        fputs(SYSINFO str, logfile); \
+        fflush(logfile);             \
     }
 
 #ifdef DEBUG_ENABLED
 //! printf-style debug message to logfile/console
-#define DEBUGF(str, ...)                                   \
-    {                                                      \
-        fprintf(LOGSTREAM, "[DEBUG] " str, ##__VA_ARGS__); \
-        fflush(LOGSTREAM);                                 \
+#define DEBUGF(str, ...)                                 \
+    if (logfile) {                                       \
+        fprintf(logfile, "[DEBUG] " str, ##__VA_ARGS__); \
+        fflush(logfile);                                 \
     }
 
 //! print debug message to logfile/console
-#define DEBUG(str)                        \
-    {                                     \
-        fputs("[DEBUG] " str, LOGSTREAM); \
-        fflush(LOGSTREAM);                \
+#define DEBUG(str)                      \
+    if (logfile) {                      \
+        fputs("[DEBUG] " str, logfile); \
+        fflush(logfile);                \
     }
 #else
 #define DEBUGF(str, ...)

@@ -62,8 +62,21 @@ function Debugln(s) { }
 
 /**
  * Exit jSH.
+ * 
+ * @param {number} [code] exit code to return to DOS.
  */
-function Quit() { }
+function Quit(code) { }
+
+/**
+ * Controls the handling of CTRL-C/BREAK.
+ * Note:
+ *  - MS-DOS and FreeDOS do support it, but only if the program reads/writes from/to the console
+ *  - DOSBox-X does support it, but only if the program does reads from the console (this will be fixed to behave like MS-DOS/FreeDOS)
+ *  - plain DOSBox does not support CTRL-C/CTRL-BREAK at all
+ * 
+ * @param {boolean} enable true to enable CTRL-C/BREAK handling (default) or false to suppress it.
+ */
+function CtrlBreak(enable) { }
 
 /**
  * Run garbage collector, print statistics to logfile if 'info==true'.
