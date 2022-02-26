@@ -25,6 +25,7 @@ SOFTWARE.
 #include <stdlib.h>
 
 #include "watt.h"
+#include "intarray.h"
 
 /************
 ** defines **
@@ -561,6 +562,66 @@ static void Socket_ReadBytes(js_State *J) {
     free(buff);
 }
 
+/**
+ * @brief return data as IntArray
+ * socket.ReadInts(len:number):IntArray
+ *
+ * @param J VM state.
+ */
+static void Socket_ReadInts(js_State *J) {
+    SOCK_USER_DATA(s);
+
+    int32_t len = js_toint32(J, 1);
+    if (len <= 0) {
+        js_error(J, "Socket read length must be >= 0");
+        return;
+    }
+
+    char *buff = malloc(len + 1);
+    if (!buff) {
+        JS_ENOMEM(J);
+        return;
+    }
+
+    int read = sock_read(s->socket, (BYTE *)buff, len);
+    if (read) {
+        IntArray_fromBytes(J, (uint8_t *)buff, read);
+    } else {
+        js_pushnull(J);
+    }
+    free(buff);
+}
+
+/**
+ * @brief send binary data.
+ * socket.WriteInts(data:IntArray)
+ *
+ * @param J VM state.
+ */
+static void Socket_WriteInts(js_State *J) {
+    SOCK_USER_DATA(s);
+    JS_CHECKTYPE(J, 1, TAG_INT_ARRAY);
+
+    if (js_isuserdata(J, 1, TAG_INT_ARRAY)) {
+        int_array_t *ia = js_touserdata(J, 1, TAG_INT_ARRAY);
+
+        BYTE *data = malloc(ia->size);
+        if (!data) {
+            JS_ENOMEM(J);
+            return;
+        }
+
+        for (int i = 0; i < ia->size; i++) {
+            data[i] = ia->data[i];
+        }
+        sock_write(s->socket, data, ia->size);
+
+        free(data);
+    } else {
+        JS_ENOARR(J);
+    }
+}
+
 /***********************
 ** exported functions **
 ***********************/
@@ -572,30 +633,33 @@ static void Socket_ReadBytes(js_State *J) {
 void init_socket(js_State *J) {
     DEBUGF("%s\n", __PRETTY_FUNCTION__);
 
-    js_newobject(J);
-    {
-        NPROTDEF(J, Socket, Close, 0);
-        NPROTDEF(J, Socket, Mode, 0);
-        NPROTDEF(J, Socket, WaitFlush, 0);
-        NPROTDEF(J, Socket, Flush, 0);
-        NPROTDEF(J, Socket, NoFlush, 0);
-        NPROTDEF(J, Socket, FlushNext, 0);
-        NPROTDEF(J, Socket, DataReady, 0);
-        NPROTDEF(J, Socket, Established, 0);
-        NPROTDEF(J, Socket, ReadByte, 0);
-        NPROTDEF(J, Socket, ReadBytes, 0);
-        NPROTDEF(J, Socket, ReadLine, 0);
-        NPROTDEF(J, Socket, GetLocalPort, 0);
-        NPROTDEF(J, Socket, GetRemotePort, 0);
-        NPROTDEF(J, Socket, GetRemoteHost, 0);
-        NPROTDEF(J, Socket, WriteByte, 1);
-        NPROTDEF(J, Socket, WriteBytes, 1);
-        NPROTDEF(J, Socket, WaitInput, 1);
-        NPROTDEF(J, Socket, ReadString, 1);
-        NPROTDEF(J, Socket, WriteString, 1);
+    if (!no_tcpip) {
+        js_newobject(J);
+        {
+            NPROTDEF(J, Socket, Close, 0);
+            NPROTDEF(J, Socket, Mode, 0);
+            NPROTDEF(J, Socket, WaitFlush, 0);
+            NPROTDEF(J, Socket, Flush, 0);
+            NPROTDEF(J, Socket, NoFlush, 0);
+            NPROTDEF(J, Socket, FlushNext, 0);
+            NPROTDEF(J, Socket, DataReady, 0);
+            NPROTDEF(J, Socket, Established, 0);
+            NPROTDEF(J, Socket, ReadByte, 0);
+            NPROTDEF(J, Socket, ReadBytes, 0);
+            NPROTDEF(J, Socket, ReadInts, 0);
+            NPROTDEF(J, Socket, ReadLine, 0);
+            NPROTDEF(J, Socket, GetLocalPort, 0);
+            NPROTDEF(J, Socket, GetRemotePort, 0);
+            NPROTDEF(J, Socket, GetRemoteHost, 0);
+            NPROTDEF(J, Socket, WriteByte, 1);
+            NPROTDEF(J, Socket, WriteBytes, 1);
+            NPROTDEF(J, Socket, WriteInts, 1);
+            NPROTDEF(J, Socket, WaitInput, 1);
+            NPROTDEF(J, Socket, ReadString, 1);
+            NPROTDEF(J, Socket, WriteString, 1);
+        }
+        CTORDEF(J, new_Socket, TAG_SOCKET, 3);
     }
-    CTORDEF(J, new_Socket, TAG_SOCKET, 3);
-
     DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
 }
 

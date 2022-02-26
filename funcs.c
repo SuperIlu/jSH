@@ -36,6 +36,7 @@ SOFTWARE.
 #include <sys/dxe.h>
 #include <dlfcn.h>
 #include <sys/exceptn.h>
+#include <fcntl.h>
 
 #include "zipfile.h"
 
@@ -751,6 +752,8 @@ void init_funcs(js_State *J, int argc, char *argv[], int idx) {
     js_setglobal(J, "global");
 
     PROPDEF_N(J, JSH_VERSION, "JSH_VERSION");
+
+    PROPDEF_B(J, _USE_LFN, "LFN_SUPPORTED");
 
     // push script args into an array and set it as global args variable
     js_newarray(J);

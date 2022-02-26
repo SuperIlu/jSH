@@ -1,25 +1,32 @@
-#include <stdio.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <strings.h>
-#include <stdlib.h>
-#include <dpmi.h>
-#include <sys/stat.h>
-#include <sys/movedata.h>
-#include <sys/farptr.h>
-#include <sys/exceptn.h>
-#include <pc.h>
-#include <time.h>
-#include <bios.h>
-#include <signal.h>
-#include <ctype.h>
-#include <go32.h>
-#include <tcp.h>
-#include <fcntl.h>
-#include <math.h>
 #include <assert.h>
+#include <bios.h>
+#include <conio.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <dpmi.h>
+#include <fcntl.h>
+#include <go32.h>
+#include <io.h>
+#include <math.h>
+#include <netdb.h>
+#include <pc.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <sys/exceptn.h>
+#include <sys/farptr.h>
+#include <sys/movedata.h>
+#include <sys/stat.h>
+#include <tcp.h>
+#include <termios.h>
+#include <time.h>
+#include <unistd.h>
+#include <unistd.h>
+#include <zlib.h>
 
 #include "zipfile.h"
+#include "intarray.h"
 
 // symbols without include file from libgcc
 extern BOOL _watt_do_exit;
@@ -120,7 +127,7 @@ read_zipfile2
 
 // jSH
 logfile
-
+jsh_do_file
 
 __divdi3
 __divmoddi4
@@ -175,3 +182,74 @@ strdup
 sscanf
 __dj_stderr
 strstr
+
+// IntArray
+IntArray_create
+IntArray_destroy
+IntArray_fromStruct
+IntArray_push
+
+// watt32
+_watt_do_exit
+accept
+access
+basename
+bind
+chmod
+clearerr
+connect
+gai_strerror
+getaddrinfo
+getegid
+geteuid
+getgid
+gethostbyname
+getnameinfo
+getpeername
+getpid
+getsockname
+getsockopt
+getuid
+ioctlsocket
+isatty
+listen
+pathconf
+recv
+recvfrom
+select_s
+send
+sendto
+setbuf
+//setmode
+setsockopt
+setvbuf
+shutdown
+socket
+tcgetattr
+tcsetattr
+watt_sock_init
+
+// curl
+__dj_ctype_tolower
+ferror
+freeaddrinfo
+_os_flavor
+getch
+feof
+_osmajor
+read_s
+strpbrk
+memchr
+strspn
+fileno
+strtoul
+strcat
+abort
+setmode
+vfprintf
+stpcpy
+qsort
+_osminor
+close_s
+gmtime
+delay

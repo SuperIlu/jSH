@@ -18,9 +18,14 @@ global = null;
 JSH_VERSION = 0.0;
 
 /**
- * General functions.
- * @module general
+ * @property {boolean} LFN_SUPPORTED true if long filenames are supported.
  */
+LFN_SUPPORTED = false;
+
+/**
+* General functions.
+* @module general
+*/
 
 /**
  * Load and initialize a native library (DXE). Native libraries must reside in the directory jSH.EXE was started from!

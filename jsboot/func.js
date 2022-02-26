@@ -45,6 +45,21 @@ DEBUG = false;
 ZIP_DELIM = "=";
 
 /**
+* @property {string} JSBOOT_ZIP path/name of the JSBOOT.ZIP
+*/
+JSBOOT_ZIP = "JSBOOT.ZIP";
+
+/**
+* @property {string} JSBOOT_DIR path of the JSBOOT directory
+*/
+JSBOOT_DIR = "JSBOOT/";
+
+/**
+* @property {string} PACKAGE_DIR path of the JSBOOT packages directory
+*/
+PACKAGE_DIR = "PACKAGE/";
+
+/**
  * @property {number} RAW_HDD_FLAG index for HDDs when using raw disk functions.
  */
 RAW_HDD_FLAG = 0x80;
@@ -93,32 +108,33 @@ function RequireFile(name, fname) {
 function Require(name) {
 	// look in cache
 	if (name in Require._cache) {
-		Debugln("Require(cached) " + name);
+		Debug("Require(cached) " + name);
 		return Require._cache[name];
 	}
 
 	var names = [
-		name,
-		name + '.js',
-		'jsboot.zip=jsboot/' + name,
-		'jsboot.zip=jsboot/' + name + '.js',
-		'jsboot/' + name,
-		'jsboot/' + name + '.js'
+		name,													// try local dir, plain name
+		name + '.js',											// try local dir, name with .js
+		JSBOOT_ZIP + ZIP_DELIM + JSBOOT_DIR + name,				// try jsboot.zip, core packages, plain name
+		JSBOOT_ZIP + ZIP_DELIM + JSBOOT_DIR + name + '.js',		// try jsboot.zip, core packages, name with .js
+		JSBOOT_DIR + name,										// try jsboot directory, core packages, plain name
+		JSBOOT_DIR + name + '.js',								// try jsboot directory, core packages, name with .js
+		JSBOOT_ZIP + ZIP_DELIM + PACKAGE_DIR + name + '.js'		// try jsboot.zip, installed packages, name with .js
 	];
-	Debugln("Require(names) " + JSON.stringify(names));
+	Debug("Require(names) " + JSON.stringify(names));
 
 	for (var i = 0; i < names.length; i++) {
 		var n = names[i];
-		Debugln("Require() Trying '" + n + "'");
+		Debug("Require() Trying '" + n + "'");
 		try {
 			return RequireFile(name, n);
 		} catch (e) {
-			Debugln("RequireFile() " + n + " Not found" + e);
+			Debug("RequireFile() " + n + " Not found" + e);
 			continue;
 		}
 	}
 
-	throw 'Could not load "' + name + '"';
+	throw new Error('Could not load "' + name + '"');
 }
 Require._cache = Object.create(null);
 
@@ -136,6 +152,14 @@ function Include(name) {
 }
 
 /**
+ * Alias for LoadLibrary().
+ * @see LoadLibrary()
+ */
+function LoadModule(name) {
+	LoadLibrary(name);
+}
+
+/**
  * add toString() to Error class.
  */
 Error.prototype.toString = function () {
@@ -149,6 +173,7 @@ Error.prototype.toString = function () {
 function StartupInfo() {
 	if (DEBUG) {
 		Debugln("Memory: " + JSON.stringify(MemoryInfo()));
+		Debugln("Long file names: " + LFN_SUPPORTED);
 		Debugln("Command line args: " + JSON.stringify(args));
 		Debugln("SerialPorts: " + JSON.stringify(GetSerialPorts().map(function (e) { return "0x" + e.toString(16) })));
 		Debugln("ParallelPorts: " + JSON.stringify(GetParallelPorts().map(function (e) { return "0x" + e.toString(16) })));

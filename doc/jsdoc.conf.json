@@ -14,14 +14,14 @@
 	"opts": {
 		"readme": "../README.md",
 		"search": true,
-		"template": "/usr/local/lib/node_modules/better-docs"
+		"template": "/home/ilu/.nvm/versions/node/v17.4.0/lib/node_modules/better-docs"
 	},
 	"templates": {
 		"default": {
 			"outputSourceFiles": false
 		},
 		"better-docs": {
-			"name": "jSH V0.8",
+			"name": "jSH V0.9",
 			"hideGenerator": true,
 			"navLinks": [
 				{

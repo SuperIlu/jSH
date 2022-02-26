@@ -26,12 +26,12 @@ SOFTWARE.
 #include <mujs.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "jSH.h"
 #include "zip.h"
+#include "intarray.h"
 
 /************
 ** defines **
@@ -45,6 +45,8 @@ SOFTWARE.
 typedef struct __file {
     struct zip_t *zip;  //!< the zip pointer
     bool writeable;     //!< indicates the zip was opened for writing
+    bool readable;      //!< indicates the zip was opened for reading
+    bool deleteable;    //!< indicates the zip was opened for deleting
 } jszip_t;
 
 /*********************
@@ -73,7 +75,7 @@ static void new_Zip(js_State *J) {
     NEW_OBJECT_PREP(J);
     const char *fname = js_tostring(J, 1);
 
-    jszip_t *z = malloc(sizeof(jszip_t));
+    jszip_t *z = calloc(1, sizeof(jszip_t));
     if (!z) {
         JS_ENOMEM(J);
         return;
@@ -83,7 +85,9 @@ static void new_Zip(js_State *J) {
     if (mode[0] == 'a' || mode[0] == 'w') {
         z->writeable = true;
     } else if (mode[0] == 'r') {
-        z->writeable = false;
+        z->readable = true;
+    } else if (mode[0] == 'd') {
+        z->deleteable = true;
     } else {
         js_error(J, "Unknown mode for ZIP '%s'", mode);
         free(z);
@@ -139,12 +143,17 @@ static void Zip_NumEntries(js_State *J) {
         js_error(J, "ZIP was closed!");
         return;
     }
-    int num_ent = zip_total_entries(z->zip);
-    if (num_ent >= 0) {
-        js_pushnumber(J, num_ent);
-    } else {
-        js_error(J, "ZIP error!");
+    if (!z->readable) {
+        js_error(J, "ZIP was not opened for reading!");
         return;
+    } else {
+        int num_ent = zip_entries_total(z->zip);
+        if (num_ent >= 0) {
+            js_pushnumber(J, num_ent);
+        } else {
+            js_error(J, "ZIP error!");
+            return;
+        }
     }
 }
 
@@ -165,23 +174,28 @@ static void Zip_GetEntries(js_State *J) {
         return;
     }
 
-    js_newarray(J);
-    int n = zip_total_entries(z->zip);
-    for (int i = 0; i < n; i++) {
-        zip_entry_openbyindex(z->zip, i);
+    if (!z->readable) {
+        js_error(J, "ZIP was not opened for reading!");
+        return;
+    } else {
+        js_newarray(J);
+        int n = zip_entries_total(z->zip);
+        for (int i = 0; i < n; i++) {
+            zip_entry_openbyindex(z->zip, i);
 
-        js_newobject(J);
-        {
-            js_pushstring(J, zip_entry_name(z->zip));
-            js_setproperty(J, -2, "name");
-            js_pushboolean(J, zip_entry_isdir(z->zip));
-            js_setproperty(J, -2, "is_directory");
-            js_pushnumber(J, zip_entry_size(z->zip));
-            js_setproperty(J, -2, "size");
-            js_pushnumber(J, zip_entry_crc32(z->zip));
-            js_setproperty(J, -2, "crc32");
+            js_newobject(J);
+            {
+                js_pushstring(J, zip_entry_name(z->zip));
+                js_setproperty(J, -2, "name");
+                js_pushboolean(J, zip_entry_isdir(z->zip));
+                js_setproperty(J, -2, "is_directory");
+                js_pushnumber(J, zip_entry_size(z->zip));
+                js_setproperty(J, -2, "size");
+                js_pushnumber(J, zip_entry_crc32(z->zip));
+                js_setproperty(J, -2, "crc32");
+            }
+            js_setindex(J, -2, i);
         }
-        js_setindex(J, -2, i);
     }
 }
 
@@ -198,7 +212,7 @@ static void Zip_AddFile(js_State *J) {
         return;
     }
     if (!z->writeable) {
-        js_error(J, "ZIP was opened for reading!");
+        js_error(J, "ZIP was not opened for writing!");
         return;
     } else {
         const char *zip_name = js_tostring(J, 1);
@@ -232,20 +246,52 @@ static void Zip_ExtractFile(js_State *J) {
         return;
     }
 
-    const char *zip_name = js_tostring(J, 1);
-    const char *hdd_name = js_tostring(J, 2);
+    if (!z->readable) {
+        js_error(J, "ZIP was not opened for reading!");
+        return;
+    } else {
+        const char *zip_name = js_tostring(J, 1);
+        const char *hdd_name = js_tostring(J, 2);
 
-    if (zip_entry_open(z->zip, zip_name) < 0) {
-        js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_open)!", zip_name, hdd_name);
+        if (zip_entry_open(z->zip, zip_name) < 0) {
+            js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_open)!", zip_name, hdd_name);
+            return;
+        }
+        if (zip_entry_fread(z->zip, hdd_name) < 0) {
+            js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_fread)!", zip_name, hdd_name);
+            return;
+        }
+        if (zip_entry_close(z->zip) < 0) {
+            js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_close)!", zip_name, hdd_name);
+            return;
+        }
+    }
+}
+
+/**
+ * @brief delete file from ZIP.
+ * zip.DeleteFile(entry_path:string)
+ *
+ * @param J VM state.
+ */
+static void Zip_DeleteFile(js_State *J) {
+    jszip_t *z = js_touserdata(J, 0, TAG_ZIP);
+    if (!z->zip) {
+        js_error(J, "ZIP was closed!");
         return;
     }
-    if (zip_entry_fread(z->zip, hdd_name) < 0) {
-        js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_fread)!", zip_name, hdd_name);
+
+    if (!z->deleteable) {
+        js_error(J, "ZIP was not opened for deleting!");
         return;
-    }
-    if (zip_entry_close(z->zip) < 0) {
-        js_error(J, "Could not extract '%s' into '%s' from ZIP (zip_entry_close)!", zip_name, hdd_name);
-        return;
+    } else {
+        const char *zip_name = js_tostring(J, 1);
+        char *const zip_entries[] = {(char *)zip_name};
+
+        if (zip_entries_delete(z->zip, zip_entries, 1) < 0) {
+            js_error(J, "Could not delete '%s' from ZIP (zip_entries_delete)!", zip_name);
+            return;
+        }
     }
 }
 
@@ -262,8 +308,8 @@ static void Zip_ReadBytes(js_State *J) {
         return;
     }
 
-    if (z->writeable) {
-        js_error(J, "ZIP was opened for writing!");
+    if (!z->readable) {
+        js_error(J, "ZIP was not opened for reading!");
         return;
     } else {
         uint8_t *buf = NULL;
@@ -295,6 +341,46 @@ static void Zip_ReadBytes(js_State *J) {
 }
 
 /**
+ * @brief return the bytes from the zip entry as IntArray.
+ * zip.ReadBytes(entry_name:string):IntArray
+ *
+ * @param J VM state.
+ */
+static void Zip_ReadInts(js_State *J) {
+    jszip_t *z = js_touserdata(J, 0, TAG_ZIP);
+    if (!z->zip) {
+        js_error(J, "ZIP was closed!");
+        return;
+    }
+
+    if (!z->readable) {
+        js_error(J, "ZIP was not opened for reading!");
+        return;
+    } else {
+        uint8_t *buf = NULL;
+        size_t bufsize;
+
+        const char *zip_name = js_tostring(J, 1);
+
+        if (zip_entry_open(z->zip, zip_name) < 0) {
+            js_error(J, "Could not extract entry '%s' from ZIP (zip_entry_open)!", zip_name);
+            return;
+        }
+        if (zip_entry_read(z->zip, (void **)&buf, &bufsize) < 0) {
+            js_error(J, "Could not extract entry '%s' from ZIP (zip_entry_open)!", zip_name);
+            return;
+        }
+        if (zip_entry_close(z->zip) < 0) {
+            js_error(J, "Could not extract entry '%s' from ZIP (zip_entry_close)!", zip_name);
+            free(buf);
+            return;
+        }
+        IntArray_fromBytes(J, buf, bufsize);
+        free(buf);
+    }
+}
+
+/**
  * @brief write a bytes to a zip entry.
  * zip.WriteBytes(entry_name:string, data:number[])
  *
@@ -308,7 +394,7 @@ static void Zip_WriteBytes(js_State *J) {
     }
 
     if (!z->writeable) {
-        js_error(J, "ZIP was opened for reading!");
+        js_error(J, "ZIP was not opened for writing!");
         return;
     } else {
         if (js_isarray(J, 2)) {
@@ -349,6 +435,59 @@ static void Zip_WriteBytes(js_State *J) {
     }
 }
 
+/**
+ * @brief write a bytes to a zip entry.
+ * zip.WriteBytes(entry_name:string, data:IntArray)
+ *
+ * @param J VM state.
+ */
+static void Zip_WriteInts(js_State *J) {
+    jszip_t *z = js_touserdata(J, 0, TAG_ZIP);
+    if (!z->zip) {
+        js_error(J, "ZIP was closed!");
+        return;
+    }
+
+    if (!z->writeable) {
+        js_error(J, "ZIP was not opened for writing!");
+        return;
+    } else {
+        if (js_isuserdata(J, 2, TAG_INT_ARRAY)) {
+            int_array_t *ia = js_touserdata(J, 2, TAG_INT_ARRAY);
+
+            const char *zip_name = js_tostring(J, 1);
+            if (zip_entry_open(z->zip, zip_name) < 0) {
+                js_error(J, "Could create '%s' in ZIP (zip_entry_open)!", zip_name);
+                return;
+            }
+
+            uint8_t *data = malloc(ia->size);
+            if (!data) {
+                JS_ENOMEM(J);
+                return;
+            }
+
+            for (int i = 0; i < ia->size; i++) {
+                data[i] = ia->data[i];
+            }
+            if (zip_entry_write(z->zip, data, ia->size) < 0) {
+                js_error(J, "Could create '%s' in ZIP (zip_entry_write)!", zip_name);
+                free(data);
+                return;
+            }
+            if (zip_entry_close(z->zip) < 0) {
+                js_error(J, "Could create '%s' in ZIP (zip_entry_close)!", zip_name);
+                free(data);
+                return;
+            }
+
+            free(data);
+        } else {
+            JS_ENOARR(J);
+        }
+    }
+}
+
 /***********************
 ** exported functions **
 ***********************/
@@ -369,6 +508,9 @@ void init_zipfile(js_State *J) {
         NPROTDEF(J, Zip, ExtractFile, 2);
         NPROTDEF(J, Zip, WriteBytes, 2);
         NPROTDEF(J, Zip, ReadBytes, 1);
+        NPROTDEF(J, Zip, WriteInts, 2);
+        NPROTDEF(J, Zip, ReadInts, 1);
+        NPROTDEF(J, Zip, DeleteFile, 1);
     }
     CTORDEF(J, new_Zip, TAG_ZIP, 3);
 
@@ -386,17 +528,20 @@ void init_zipfile(js_State *J) {
  * @return false if an error occured, buf and size will be 0.
  */
 bool read_zipfile1(const char *fname, void **buf, size_t *size) {
+    *size = 0;
+    *buf = NULL;
+
     char *delim = strchr(fname, ZIP_DELIM);
 
     if (!delim) {
-        return NULL;
+        return false;
     }
 
     // get memory for a copy of the filename
     int flen = strlen(fname) + 1;
     char *zname = malloc(flen);
     if (!zname) {
-        return NULL;
+        return false;
     }
     memcpy(zname, fname, flen);
     int idx = delim - fname;
@@ -422,17 +567,16 @@ bool read_zipfile1(const char *fname, void **buf, size_t *size) {
  * @return false if an error occured, buf and size will be 0.
  */
 bool read_zipfile2(const char *zname, const char *ename, void **buf, size_t *size) {
+    *size = 0;
+    *buf = NULL;
+
     struct zip_t *zip = zip_open(zname, 0, 'r');
     if (!zip) {
-        *size = 0;
-        *buf = NULL;
         return false;
     }
 
     if (zip_entry_open(zip, ename) < 0) {
         zip_close(zip);
-        *size = 0;
-        *buf = NULL;
         return false;
     }
     *size = zip_entry_size(zip);

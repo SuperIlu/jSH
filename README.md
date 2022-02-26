@@ -49,6 +49,21 @@ The API is documented in the [doc/html/](http://htmlpreview.github.io/?https://g
 For now jSH comes only with a single bigger example: *JsCommander*. A minimal file manager in the style of the well known Norton Commander.
 ![jc screenshot](doc/JsCommander.png)
 
+## additional packages
+jSH has a very simple integrated package manager (JPM). It can be started with `JPM.BAT`.
+A working packet driver is needed to connect to the package index and download packages using HTTPS.
+Packages (and the package index) are fetched from the [DOjS/jSH package repository](https://github.com/SuperIlu/DOjSHPackages).
+Downloaded packages are put into `JSBOOT.ZIP` in the `PACKAGE/` directory.
+Feel free to submit any packages you want to include in that repository using a pull request.
+DPM commands:
+  * installed - list installed packages.
+  * remove    - remove package.
+  * fetch     - fetch package index from server.
+  * install   - install a package (and its dependencies) from package index.
+  * list      - list available packages in index.
+  * setindex  - set index URL (HTTP or HTTPS).
+  * help      - this help.;
+  * quit      - exit dpm.
 
 # Compilation
 You can compile jSH on any modern Linux (the instructions below are for Debian based distributions) or on Windows 10 using Windows Subsystem for Linux (WSL).

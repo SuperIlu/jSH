@@ -131,37 +131,40 @@ void init_watt(js_State *J) {
     char buffer[WATT_NAME_BUFFER_SIZE];
 
     DEBUGF("%s\n", __PRETTY_FUNCTION__);
-
-    // WATT32 init
+    if (!no_tcpip) {
+        // WATT32 init
 #ifdef DEBUG_ENABLED
-    dbug_init();
+        dbug_init();
 #endif
-    _watt_do_exit = 0;
-    int err = sock_init();
-    if (!err) {
-        LOGF("WATTCP init         : %s\n", sock_init_err(err));
-        LOGF("WATTCP Address      : %s\n", _inet_ntoa(NULL, _gethostid()));
-        LOGF("WATTCP Network Mask : %s\n", _inet_ntoa(NULL, sin_mask));
-        gethostname(buffer, sizeof(buffer));
-        LOGF("WATTCP hostname     : %s\n", buffer);
-        getdomainname(buffer, sizeof(buffer));
-        LOGF("WATTCP domainname   : %s\n", buffer);
-        LOGF("WATTCP              : %s / %s\n", wattcpVersion(), wattcpCapabilities());
+        _watt_do_exit = 0;
+        int err = sock_init();
+        if (!err) {
+            LOGF("WATTCP init         : %s\n", sock_init_err(err));
+            LOGF("WATTCP Address      : %s\n", _inet_ntoa(NULL, _gethostid()));
+            LOGF("WATTCP Network Mask : %s\n", _inet_ntoa(NULL, sin_mask));
+            gethostname(buffer, sizeof(buffer));
+            LOGF("WATTCP hostname     : %s\n", buffer);
+            getdomainname(buffer, sizeof(buffer));
+            LOGF("WATTCP domainname   : %s\n", buffer);
+            LOGF("WATTCP              : %s / %s\n", wattcpVersion(), wattcpCapabilities());
+        } else {
+            LOGF("WATTCP init: %s\n", sock_init_err(err));
+        }
+
+        // functions
+        NFUNCDEF(J, GetLocalIpAddress, 0);
+        NFUNCDEF(J, GetNetworkMask, 0);
+        NFUNCDEF(J, GetHostname, 0);
+        NFUNCDEF(J, GetDomainname, 0);
+        NFUNCDEF(J, Resolve, 1);
+        NFUNCDEF(J, ResolveIp, 1);
+
+#ifdef DEBUG_ENABLED
+        NFUNCDEF(J, IpDebug, 1);
+#endif
     } else {
-        LOGF("WATTCP init: %s\n", sock_init_err(err));
+        LOGF("TCP/IP stack disabled\n");
     }
-
-    // functions
-    NFUNCDEF(J, GetLocalIpAddress, 0);
-    NFUNCDEF(J, GetNetworkMask, 0);
-    NFUNCDEF(J, GetHostname, 0);
-    NFUNCDEF(J, GetDomainname, 0);
-    NFUNCDEF(J, Resolve, 1);
-    NFUNCDEF(J, ResolveIp, 1);
-
-#ifdef DEBUG_ENABLED
-    NFUNCDEF(J, IpDebug, 1);
-#endif
 
     DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
 }

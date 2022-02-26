@@ -1,3 +1,8 @@
+**V0.9 packages**
+* added `JSBOOT.ZIP` to replace `JSBOOT/`
+* added jpm package manager
+* Added `LFN_SUPPORTED` global to indicate if long filenames are supported by the current DOS installation.
+
 **V0.8 fixes, fixes, fixes**
 * fixed internal version number, now reports itself as 0.8, 0.7 did report itself as 0.6. https://github.com/SuperIlu/jSH/issues/4
 * `Quit()` now takes an optional numerical parameter, `Exit()` now exists as alias to `Quit()`. https://github.com/SuperIlu/jSH/issues/6

@@ -33,15 +33,18 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.8         //!< version number
-#define JSH_VERSION_STR "V0.8"  //!< version number as string
+#define JSH_VERSION 0.9         //!< version number
+#define JSH_VERSION_STR "V0.9"  //!< version number as string
 
-#define JSBOOT_DIR "JSBOOT/"  //!< directory with boot files.
+#define JSBOOT_DIR "JSBOOT/"     //!< directory with boot files.
+#define JSBOOT_ZIP "JSBOOT.ZIP"  //!< filename for ZIP of JSBOOT
+#define JSBOOT_VAR "JSBOOTPATH"  //!< global variable containing the prefix for JSBOOT
 
 #define LOGFILE "JSLOG.TXT"  //!< filename for logfile
 
-#define JS_ENOMEM(j) js_error(j, "Out of memory")   //!< use always the same message when memory runs out
-#define JS_ENOARR(j) js_error(j, "Array expected")  //!< use always the same message when array expected
+#define JS_ENOMEM(j) js_error(j, "Out of memory")                     //!< use always the same message when memory runs out
+#define JS_ENOARR(j) js_error(j, "Array expected")                    //!< use always the same message when array expected
+#define JS_EIDX(j, idx) js_error(j, "Index out of bound (%ld)", idx)  //!< use always the same message when array index out of bound
 
 /***********
 ** macros **
@@ -79,6 +82,13 @@ SOFTWARE.
     {                        \
         js_newboolean(j, i); \
         js_setglobal(j, n);  \
+    }
+
+//! define a global property of type string
+#define PROPDEF_S(j, i, n)  \
+    {                       \
+        js_newstring(j, i); \
+        js_setglobal(j, n); \
     }
 
 //! printf-style write info to logfile/console
@@ -120,6 +130,24 @@ SOFTWARE.
 #define NEW_OBJECT_PREP(j)
 #endif
 
+//! check if parameter has a certain usertype
+#define JS_CHECKTYPE(j, idx, type)            \
+    {                                         \
+        if (!js_isuserdata(j, idx, type)) {   \
+            js_error(j, "%s expected", type); \
+            return;                           \
+        }                                     \
+    }
+
+//! check if a number is positive
+#define JS_CHECKPOS(j, num)                                                 \
+    {                                                                       \
+        if (num < 0) {                                                      \
+            js_error(j, "Non negative number expected: %ld", (int32_t)num); \
+            return;                                                         \
+        }                                                                   \
+    }
+
 /*****************
 ** struct/types **
 *****************/
@@ -135,11 +163,13 @@ typedef struct __library_t {
 *********************/
 extern FILE *logfile;  //!< file for log output.
 extern library_t *jsh_loaded_libraries;
+bool no_tcpip;  //!< command line option
 
 /***********************
 ** exported functions **
 ***********************/
 extern bool jsh_register_library(const char *name, void *handle, void (*shutdown)(void));
 extern bool jsh_check_library(const char *name);
+extern int jsh_do_file(js_State *J, const char *fname);
 
 #endif  // __JSH_H__
