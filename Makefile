@@ -12,7 +12,7 @@ MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
 WATT32		= $(THIRDPARTY)/watt32-2.2dev.rel.11/
 KUBAZIP		= $(THIRDPARTY)/zip
-OPENSSL		= $(THIRDPARTY)/openssl-1.1.1m
+OPENSSL		= $(THIRDPARTY)/openssl-1.1.1n
 CURL		= $(THIRDPARTY)/curl-7.80.0
 ZLIB		= $(THIRDPARTY)/zlib-1.2.11
 

@@ -1,3 +1,7 @@
+**V0.91 fixes**
+* updated openssl to 1.1.1n
+* small fixes in jpm package manager
+
 **V0.9 packages**
 * added `JSBOOT.ZIP` to replace `JSBOOT/`
 * added jpm package manager

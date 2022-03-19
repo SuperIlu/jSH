@@ -120,7 +120,7 @@ function CmdFetch() {
 			if (exports.idx.pkgtype === "jsh") {
 				index = exports.idx;
 
-				msg("Loaded " + resp[0].length + " bytes from index with " + index.length + " packages:");
+				msg("Loaded " + resp[0].length + " bytes from index with " + index.packages.length + " packages:");
 				msg("  " + indexUrl);
 				msg("Index date: " + index.index_date);
 			} else {
@@ -331,7 +331,7 @@ while (keepRunning) {
 		if (inp.length > 0) {
 			if (linp === "help") {
 				CmdHelp();
-			} else if ((linp === "quit") || (linp === "quit")) {
+			} else if ((linp === "quit") || (linp === "exit")) {
 				keepRunning = false;
 			} else if (linp === "fetch") {
 				CmdFetch();
