@@ -70,6 +70,13 @@ RAW_HDD_FLAG = 0x80;
 RAW_BLOCKSIZE = 512;
 
 /**
+ * @property {String} navigator.appName can be used to detect jSH
+ */
+navigator = {
+	"appName": "jSH"
+};
+
+/**
  * try a specific filename which can ba a plain file or a ZIP-file entry. Throws an Exception if the file cant be read.
  * 
  * @param {string} name module name.
@@ -83,7 +90,7 @@ function RequireFile(name, fname) {
 		var parts = fname.split(ZIP_DELIM);
 		var zname = parts[0];
 		var ename = parts[1];
-		Debugln("Require(zip) " + zname + " -> " + ename);
+		// Debugln("Require(zip) " + zname + " -> " + ename);
 
 		content = ReadZIP(zname, ename);
 	} else {
@@ -91,7 +98,13 @@ function RequireFile(name, fname) {
 	}
 	var exports = {};
 	Require._cache[name] = exports;
-	NamedFunction('exports', content, name)(exports);
+	try {
+		NamedFunction('exports', content, name)(exports);
+	} catch (e) {
+		Debugln("Parse error: " + e)
+		throw e;
+	}
+	// Debugln("Found " + fname);
 	return exports;
 }
 
@@ -108,7 +121,7 @@ function RequireFile(name, fname) {
 function Require(name) {
 	// look in cache
 	if (name in Require._cache) {
-		Debug("Require(cached) " + name);
+		// Debug("Require(cached) " + name);
 		return Require._cache[name];
 	}
 
@@ -121,15 +134,15 @@ function Require(name) {
 		JSBOOT_DIR + name + '.js',								// try jsboot directory, core packages, name with .js
 		JSBOOT_ZIP + ZIP_DELIM + PACKAGE_DIR + name + '.js'		// try jsboot.zip, installed packages, name with .js
 	];
-	Debug("Require(names) " + JSON.stringify(names));
+	// Debugln("Require(names) " + JSON.stringify(names));
 
 	for (var i = 0; i < names.length; i++) {
 		var n = names[i];
-		Debug("Require() Trying '" + n + "'");
+		//Debug("Require() Trying '" + n + "'");
 		try {
 			return RequireFile(name, n);
 		} catch (e) {
-			Debug("RequireFile() " + n + " Not found" + e);
+			//Debug("RequireFile() " + n + " Not found" + e);
 			continue;
 		}
 	}
@@ -146,7 +159,7 @@ Require._cache = Object.create(null);
 function Include(name) {
 	var e = Require(name);
 	for (var key in e) {
-		Debugln("Include(toGlobal) " + key);
+		//Debugln("Include(toGlobal) " + key);
 		global[key] = e[key];
 	}
 }

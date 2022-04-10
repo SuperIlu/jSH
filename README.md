@@ -163,3 +163,6 @@ Portions of this code were written or enhanced by others and offerred
 to me for distribution in WATTCP under my copyright.  To my knowledge,
 all copyrights exercised are listed at the top of this file.  If this
 is incorrect, please contact me so I can rectify the situation.
+
+## PCTIMER
+[PCTIMER](http://technology.chtsai.org/pctimer/) is Freeware

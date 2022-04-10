@@ -5,6 +5,7 @@
 			"objects.js",
 			"classes.js",
 			"conio.js",
+			"p5js.js",
 			"../jsboot/socket.js",
 			"../jsboot/func.js",
 			"../jsboot/file.js"
@@ -21,7 +22,7 @@
 			"outputSourceFiles": false
 		},
 		"better-docs": {
-			"name": "jSH V0.9",
+			"name": "jSH V0.92",
 			"hideGenerator": true,
 			"navLinks": [
 				{

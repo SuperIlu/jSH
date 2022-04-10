@@ -1,5 +1,5 @@
 #include "libcpuid.h"
-#include "../jSH.h"
+#include "jSH.h"
 
 void init_cpuid(js_State *J);
 

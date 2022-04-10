@@ -256,3 +256,13 @@ function EnableScrolling(ena) { }
  * @returns {number} key code.
  */
 function GetXKey() { }
+
+/**
+ * Set 16 background color mode.
+ */
+function IntenseVideo() { }
+
+/**
+* Set 8 background color mode with blinking.
+*/
+function BlinkVideo() { }

@@ -560,3 +560,60 @@ Curl.prototype.GetResponseCode = function () { };
  * @returns {IntArray[]} An array with two IntArrays and the response code. The first (index 0) contains the request body, the second (index 1) the request headers and the third (index 2) the response code.
  */
 Curl.prototype.DoRequest = function (url) { };
+
+/**
+ * screen backbuffer.
+ * 
+ * @class
+ */
+function Screen() { }
+
+/**
+ * copy contents of the current display to this screen.
+ */
+Screen.prototype.FromDisplay = function () { }
+
+/**
+ * copy contents of this screen to the display.
+ */
+Screen.prototype.ToDisplay = function () { }
+
+/**
+ * clear the screen with current background color.
+ */
+Screen.prototype.Clear = function () { }
+
+/**
+ * Set background color.
+ * @param {number} col the color.
+ * @see TextBackground()
+ */
+Screen.prototype.TextBackground = function (color) { }
+/**
+ * Set text color.
+ * @param {number} col the color.
+ * @see TextColor()
+ */
+Screen.prototype.TextColor = function (color) { }
+
+/**
+ * add text to the Screen. the text is added with the current text/background color of the Screen. x/y coordinates are 1-based (like with GotoXY()).
+ * 
+ * @param {number} x x start coordinate
+ * @param {number} y y start coordinate
+ * @param {string} str text to add.
+ * 
+ * @see GotoXY()
+ */
+Screen.prototype.Put = function (x, y, str) { }
+
+/**
+ * add text to the Screen. the text is added with the current text/background color of the Screen. x/y coordinates are 0-based.
+ * 
+ * @param {number} x x start coordinate
+ * @param {number} y y start coordinate
+ * @param {string} str text to add.
+ * 
+ * @see GotoXY()
+ */
+Screen.prototype.Put0 = function (x, y, str) { }

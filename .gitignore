@@ -18,7 +18,7 @@ dexport.c
 *.dxe
 jSH-cppcheck-build-dir/
 *.undef
-dexport.c
+src/dexport.c
 capture/
 tmp/
 TEST.DB

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "../jSH.h"
+#include "jSH.h"
 
 #include "neural.h"
 #include "genann.h"

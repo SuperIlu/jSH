@@ -1,6 +1,6 @@
 #include <mujs.h>
 #include <stdio.h>
-#include "../jSH.h"
+#include "jSH.h"
 
 void init_dxetest2(js_State *J);
 void shutdown_dxetest2(void);

@@ -1,3 +1,13 @@
+**V0.92 p5js**
+* updated zlib to 1.2.12
+* moved sources to `src/`
+* added `MSecTime()` based on [PCTIMER](http://technology.chtsai.org/pctimer/)
+* `Sleep()` now uses milliseconds and not seconds as before.
+* added `Screen` object for text mode double buffering.
+* added simple text mode port of p5js for fun
+* A sketch can now query if it is running on jSH using `if (navigator.appName === "jSH") {}`
+* added `IntenseVideo()` and `BlinkVideo()`
+
 **V0.91 fixes**
 * updated openssl to 1.1.1n
 * small fixes in jpm package manager

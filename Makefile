@@ -14,7 +14,8 @@ WATT32		= $(THIRDPARTY)/watt32-2.2dev.rel.11/
 KUBAZIP		= $(THIRDPARTY)/zip
 OPENSSL		= $(THIRDPARTY)/openssl-1.1.1n
 CURL		= $(THIRDPARTY)/curl-7.80.0
-ZLIB		= $(THIRDPARTY)/zlib-1.2.11
+ZLIB		= $(THIRDPARTY)/zlib-1.2.12
+PCTIMER     = $(THIRDPARTY)/pctimer
 
 LIB_DZCOMM	= $(DZCOMMDIR)/lib/djgpp/libdzcom.a
 LIB_MUJS	= $(MUJS)/build/release/libmujs.a
@@ -34,7 +35,8 @@ INCLUDES	= \
 	-I$(realpath $(ZLIB)) \
 	-I$(realpath $(OPENSSL))/include \
 	-I$(realpath $(CURL))/include \
-	-I$(realpath .)
+	-I$(realpath $(PCTIMER)) \
+	-I$(realpath ./src/)
 
 # linker
 LIBS		= -lmujs -lm -lemu -ldzcom -lwatt
@@ -48,7 +50,7 @@ RELZIP			= jsh.zip
 BUILDDIR		= build
 DOCDIR			= doc/html
 DXE_TEMPLATE	= dxetemplate.txt
-DXE_EXPORTS		= dexport.c
+DXE_EXPORTS		= src/dexport.c
 
 CROSS=$(DJGPP)/i586-pc-msdosdjgpp
 CROSS_PLATFORM=i586-pc-msdosdjgpp-
@@ -62,7 +64,8 @@ DXE3RES = dxe3res
 export
 
 PARTS= \
-	$(BUILDDIR)/zip/src/zip.o \
+	$(BUILDDIR)/zip.o \
+	$(BUILDDIR)/pctimer/gccint8.o \
 	$(BUILDDIR)/file.o \
 	$(BUILDDIR)/funcs.o \
 	$(BUILDDIR)/jsconio.o \
@@ -72,6 +75,7 @@ PARTS= \
 	$(BUILDDIR)/lowlevel.o \
 	$(BUILDDIR)/jSH.o \
 	$(BUILDDIR)/intarray.o \
+	$(BUILDDIR)/screen.o \
 	$(BUILDDIR)/dexport.o
 
 DXE_DIRS := $(wildcard *.dxelib)
@@ -107,10 +111,13 @@ $(EXE): $(PARTS)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(STRIP) $@
 
-$(BUILDDIR)/%.o: %.c Makefile
+$(BUILDDIR)/%.o: src/%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/zip/src/%.o: $(KUBAZIP)/src/%.c Makefile
+$(BUILDDIR)/pctimer/%.o: $(PCTIMER)/%.c Makefile
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILDDIR)/%.o: $(KUBAZIP)/src/%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(DXE_DIRS):
@@ -135,7 +142,7 @@ doc:
 	cp doc/*.png $(DOCDIR)
 
 init:
-	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src
+	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src $(BUILDDIR)/pctimer
 	# make sure compile time is always updated
 	rm -f $(BUILDDIR)/jSH.o
 
