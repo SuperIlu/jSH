@@ -3,7 +3,7 @@
 ## A Javascript scripting engine for DOS
 [jSH](https://github.com/SuperIlu/jSH) is a script interpreter for DOS based operating systems like MS-DOS, [FreeDOS](http://freedos.org/) or any DOS based Windows (like 95, 98, ME). The focus is on file io and text mode user interfaces.
 
-jSH is a side project to [DOjS](https://github.com/SuperIlu/DOjS), a Javascript canvas for creative coding.
+**jSH is a small side project to [DOjS](https://github.com/SuperIlu/DOjS), a Javascript coding environment for MS-DOS  supporting graphics, sound, etc. including a built in editor and much more**
 
 The following script e.g. renames all file extensions in a given directory:
 ```Javascript
