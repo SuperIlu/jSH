@@ -11,11 +11,12 @@ THIRDPARTY	= 3rdparty/
 MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
 WATT32		= $(THIRDPARTY)/watt32-2.2dev.rel.11/
-KUBAZIP		= $(THIRDPARTY)/zip
-OPENSSL		= $(THIRDPARTY)/openssl-1.1.1n
-CURL		= $(THIRDPARTY)/curl-7.80.0
+KUBAZIP		= $(THIRDPARTY)/zip-0.2.3
+OPENSSL		= $(THIRDPARTY)/openssl-1.1.1q
+CURL		= $(THIRDPARTY)/curl-7.84.0
 ZLIB		= $(THIRDPARTY)/zlib-1.2.12
 PCTIMER     = $(THIRDPARTY)/pctimer
+INI			= $(THIRDPARTY)/ini-20220806/src
 
 LIB_DZCOMM	= $(DZCOMMDIR)/lib/djgpp/libdzcom.a
 LIB_MUJS	= $(MUJS)/build/release/libmujs.a
@@ -36,6 +37,7 @@ INCLUDES	= \
 	-I$(realpath $(OPENSSL))/include \
 	-I$(realpath $(CURL))/include \
 	-I$(realpath $(PCTIMER)) \
+	-I$(realpath $(INI))/ \
 	-I$(realpath ./src/)
 
 # linker
@@ -76,6 +78,8 @@ PARTS= \
 	$(BUILDDIR)/jSH.o \
 	$(BUILDDIR)/intarray.o \
 	$(BUILDDIR)/screen.o \
+	$(BUILDDIR)/inifile.o \
+	$(BUILDDIR)/ini/ini.o \
 	$(BUILDDIR)/dexport.o
 
 DXE_DIRS := $(wildcard *.dxelib)
@@ -120,6 +124,9 @@ $(BUILDDIR)/pctimer/%.o: $(PCTIMER)/%.c Makefile
 $(BUILDDIR)/%.o: $(KUBAZIP)/src/%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILDDIR)/ini/%.o: $(INI)/%.c Makefile
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(DXE_DIRS):
 	$(MAKE) -C $@
 
@@ -142,7 +149,7 @@ doc:
 	cp doc/*.png $(DOCDIR)
 
 init:
-	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src $(BUILDDIR)/pctimer
+	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src $(BUILDDIR)/pctimer $(BUILDDIR)/ini
 	# make sure compile time is always updated
 	rm -f $(BUILDDIR)/jSH.o
 

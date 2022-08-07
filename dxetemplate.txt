@@ -169,6 +169,7 @@ utimes
 write
 memset
 fstat
+fdopen
 
 rand
 perror

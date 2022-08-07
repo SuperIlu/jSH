@@ -40,6 +40,7 @@ SOFTWARE.
 #include "intarray.h"
 #include "screen.h"
 #include "gccint8.h"
+#include "inifile.h"
 
 /**************
 ** Variables **
@@ -234,6 +235,7 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
     init_zipfile(J);
     init_intarray(J);
     init_screen(J);
+    init_inifile(J);
 
     // do some more init from JS
     if (jsh_file_exists(JSBOOT_ZIP)) {

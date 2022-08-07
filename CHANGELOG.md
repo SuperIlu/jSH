@@ -1,3 +1,7 @@
+**V0.92 updates, init?**
+* updated openssl, curl and kuba-zip
+* added `IniFile` class for reading INI files
+
 **V0.92 p5js**
 * updated zlib to 1.2.12
 * moved sources to `src/`

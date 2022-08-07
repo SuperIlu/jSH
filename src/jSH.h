@@ -33,8 +33,8 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.92         //!< version number
-#define JSH_VERSION_STR "V0.92"  //!< version number as string
+#define JSH_VERSION 0.93         //!< version number
+#define JSH_VERSION_STR "V0.93"  //!< version number as string
 
 #define JSBOOT_DIR "JSBOOT/"     //!< directory with boot files.
 #define JSBOOT_ZIP "JSBOOT.ZIP"  //!< filename for ZIP of JSBOOT
