@@ -42,6 +42,13 @@ function LoadLibrary(name) { }
 function GetLoadedLibraries() { }
 
 /**
+ * @param {string} varname the name of the variable
+ * 
+ * @returns {string} the value of the var or NULL if it does not exists.
+ */
+function GetEnv(varname) { }
+
+/**
  * Write data to stdout.
  * @param {string} s the string to print.
  */

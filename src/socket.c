@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2019-2021 Andre Seidelt <superilu@yahoo.com>
+Copyright (c) 2019-2022 Andre Seidelt <superilu@yahoo.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "socket.h"
-
 #include <stdlib.h>
 
+#include "socket.h"
+
 #include "watt.h"
-#include "intarray.h"
+#include "bytearray.h"
 
 /************
 ** defines **
@@ -116,14 +116,14 @@ static void new_Socket(js_State *J) {
         return;
     }
 
-    socket_t *s = malloc(sizeof(socket_t));
+    socket_t *s = calloc(1, sizeof(socket_t));
     if (!s) {
         JS_ENOMEM(J);
         return;
     }
     s->server = false;
 
-    s->socket = malloc(sizeof(tcp_Socket) > sizeof(udp_Socket) ? sizeof(tcp_Socket) : sizeof(udp_Socket));
+    s->socket = calloc(1, sizeof(tcp_Socket) > sizeof(udp_Socket) ? sizeof(tcp_Socket) : sizeof(udp_Socket));
     if (!s->socket) {
         free(s);
         JS_ENOMEM(J);
@@ -179,10 +179,10 @@ static void new_Socket(js_State *J) {
 
     // add properties
     js_pushboolean(J, s->udp);
-    js_defproperty(J, -2, "udp", JS_READONLY | JS_DONTENUM | JS_DONTCONF);
+    js_defproperty(J, -2, "udp", JS_READONLY | JS_DONTCONF);
 
     js_pushboolean(J, s->server);
-    js_defproperty(J, -2, "server", JS_READONLY | JS_DONTENUM | JS_DONTCONF);
+    js_defproperty(J, -2, "server", JS_READONLY | JS_DONTCONF);
 
     tcp_tick(s->socket);  // this function is fine for UDP-sockets as well
     socket_count++;
@@ -351,6 +351,25 @@ static void Socket_WriteBytes(js_State *J) {
 }
 
 /**
+ * @brief send binary data.
+ * socket.WriteInts(data:ByteArray)
+ *
+ * @param J VM state.
+ */
+static void Socket_WriteInts(js_State *J) {
+    SOCK_USER_DATA(s);
+    JS_CHECKTYPE(J, 1, TAG_BYTE_ARRAY);
+
+    if (js_isuserdata(J, 1, TAG_BYTE_ARRAY)) {
+        byte_array_t *ba = js_touserdata(J, 1, TAG_BYTE_ARRAY);
+
+        sock_write(s->socket, ba->data, ba->size);
+    } else {
+        JS_ENOARR(J);
+    }
+}
+
+/**
  * @brief send string
  * socket.WriteString(data:string)
  *
@@ -453,7 +472,13 @@ static void Socket_Established(js_State *J) {
  */
 static void Socket_GetRemoteHost(js_State *J) {
     SOCK_USER_DATA(s);
-    watt_pushipaddr(J, sock_rhost(s->socket));
+    struct watt_sockaddr waddr;
+    int len = sizeof(struct watt_sockaddr);
+    if (_w32__getpeername(s->socket, &waddr, &len) == 0) {
+        watt_pushipaddr(J, waddr.s_ip);
+    } else {
+        js_error(J, "Could not get remote address");
+    }
 }
 
 /**
@@ -464,7 +489,14 @@ static void Socket_GetRemoteHost(js_State *J) {
  */
 static void Socket_GetLocalPort(js_State *J) {
     SOCK_USER_DATA(s);
-    js_pushnumber(J, sock_lport(s->socket));
+
+    struct watt_sockaddr waddr;
+    int len = sizeof(struct watt_sockaddr);
+    if (_w32__getsockname(s->socket, &waddr, &len) == 0) {
+        js_pushnumber(J, waddr.s_port);
+    } else {
+        js_error(J, "Could not get local port");
+    }
 }
 
 /**
@@ -475,7 +507,14 @@ static void Socket_GetLocalPort(js_State *J) {
  */
 static void Socket_GetRemotePort(js_State *J) {
     SOCK_USER_DATA(s);
-    js_pushnumber(J, sock_rport(s->socket));
+
+    struct watt_sockaddr waddr;
+    int len = sizeof(struct watt_sockaddr);
+    if (_w32__getpeername(s->socket, &waddr, &len) == 0) {
+        js_pushnumber(J, waddr.s_port);
+    } else {
+        js_error(J, "Could not get remote port");
+    }
 }
 
 /**
@@ -563,8 +602,8 @@ static void Socket_ReadBytes(js_State *J) {
 }
 
 /**
- * @brief return data as IntArray
- * socket.ReadInts(len:number):IntArray
+ * @brief return data as ByteArray
+ * socket.ReadInts(len:number):ByteArray
  *
  * @param J VM state.
  */
@@ -585,41 +624,11 @@ static void Socket_ReadInts(js_State *J) {
 
     int read = sock_read(s->socket, (BYTE *)buff, len);
     if (read) {
-        IntArray_fromBytes(J, (uint8_t *)buff, read);
+        ByteArray_fromBytes(J, (uint8_t *)buff, read);
     } else {
         js_pushnull(J);
     }
     free(buff);
-}
-
-/**
- * @brief send binary data.
- * socket.WriteInts(data:IntArray)
- *
- * @param J VM state.
- */
-static void Socket_WriteInts(js_State *J) {
-    SOCK_USER_DATA(s);
-    JS_CHECKTYPE(J, 1, TAG_INT_ARRAY);
-
-    if (js_isuserdata(J, 1, TAG_INT_ARRAY)) {
-        int_array_t *ia = js_touserdata(J, 1, TAG_INT_ARRAY);
-
-        BYTE *data = malloc(ia->size);
-        if (!data) {
-            JS_ENOMEM(J);
-            return;
-        }
-
-        for (int i = 0; i < ia->size; i++) {
-            data[i] = ia->data[i];
-        }
-        sock_write(s->socket, data, ia->size);
-
-        free(data);
-    } else {
-        JS_ENOARR(J);
-    }
 }
 
 /***********************
@@ -660,6 +669,7 @@ void init_socket(js_State *J) {
         }
         CTORDEF(J, new_Socket, TAG_SOCKET, 3);
     }
+
     DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
 }
 

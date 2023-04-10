@@ -2,27 +2,26 @@
 # Makefile for cross compiling jSH for FreeDOS/MS-DOS
 # All compilation was done with DJGPP 7.2.0 built from https://github.com/andrewwutw/build-djgpp
 ###
-# enter the path to x-djgpp here
-#DJGPP=/Users/iluvatar/tmp/djgpp/bin
-DJGPP=/home/ilu/djgpp/bin
 
 # subdirs
 THIRDPARTY	= 3rdparty/
 MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
-WATT32		= $(THIRDPARTY)/watt32-2.2dev.rel.11/
 KUBAZIP		= $(THIRDPARTY)/zip-0.2.3
-OPENSSL		= $(THIRDPARTY)/openssl-1.1.1q
-CURL		= $(THIRDPARTY)/curl-7.84.0
 ZLIB		= $(THIRDPARTY)/zlib-1.2.12
 PCTIMER     = $(THIRDPARTY)/pctimer
 INI			= $(THIRDPARTY)/ini-20220806/src
+WATT32		= $(THIRDPARTY)/Watt-32
+CURL		= $(THIRDPARTY)/curl-8.0.1
+MBEDTLS		= $(THIRDPARTY)/mbedtls-2.28.3
+
+JSDOC_TEMPLATES=/home/ilu/.nvm/versions/node/v17.4.0/lib/node_modules/better-docs /usr/lib/node_modules/better-docs /tmp
 
 LIB_DZCOMM	= $(DZCOMMDIR)/lib/djgpp/libdzcom.a
 LIB_MUJS	= $(MUJS)/build/release/libmujs.a
 LIB_WATT	= $(WATT32)/lib/libwatt.a
 LIB_Z		= $(ZLIB)/libz.a
-LIB_SSL		= $(OPENSSL)/libssl.a
+LIB_MBEDTLS = $(MBEDTLS)/library/libmbedtls.a
 LIB_CURL	= $(CURL)/libcurl.a
 
 # compiler
@@ -34,7 +33,7 @@ INCLUDES	= \
 	-I$(realpath $(WATT32))/inc \
 	-I$(realpath $(KUBAZIP))/src \
 	-I$(realpath $(ZLIB)) \
-	-I$(realpath $(OPENSSL))/include \
+	-I$(realpath $(MBEDTLS))/include \
 	-I$(realpath $(CURL))/include \
 	-I$(realpath $(PCTIMER)) \
 	-I$(realpath $(INI))/ \
@@ -54,13 +53,13 @@ DOCDIR			= doc/html
 DXE_TEMPLATE	= dxetemplate.txt
 DXE_EXPORTS		= src/dexport.c
 
-CROSS=$(DJGPP)/i586-pc-msdosdjgpp
+CROSS=i586-pc-msdosdjgpp
 CROSS_PLATFORM=i586-pc-msdosdjgpp-
-CC=$(DJGPP)/$(CROSS_PLATFORM)gcc
-AR=$(DJGPP)/$(CROSS_PLATFORM)ar
-LD=$(DJGPP)/$(CROSS_PLATFORM)ld
-STRIP=$(DJGPP)/$(CROSS_PLATFORM)strip
-RANLIB=$(DJGPP)/$(CROSS_PLATFORM)ranlib
+CC=$(CROSS_PLATFORM)gcc
+AR=$(CROSS_PLATFORM)ar
+LD=$(CROSS_PLATFORM)ld
+STRIP=$(CROSS_PLATFORM)strip
+RANLIB=$(CROSS_PLATFORM)ranlib
 DXE3GEN = dxe3gen
 DXE3RES = dxe3res
 export
@@ -77,6 +76,8 @@ PARTS= \
 	$(BUILDDIR)/lowlevel.o \
 	$(BUILDDIR)/jSH.o \
 	$(BUILDDIR)/intarray.o \
+	$(BUILDDIR)/bytearray.o \
+	$(BUILDDIR)/util.o \
 	$(BUILDDIR)/screen.o \
 	$(BUILDDIR)/inifile.o \
 	$(BUILDDIR)/ini/ini.o \
@@ -94,18 +95,17 @@ libmujs: $(LIB_MUJS)
 $(LIB_MUJS):
 	$(MAKE) -C $(MUJS) build/release/libmujs.a
 
+libcurl: $(LIB_CURL)
+$(LIB_CURL): $(LIB_MBEDTLS) $(LIB_Z)
+	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.mk CFG=-zlib-mbedtls-watt TRIPLET=i586-pc-msdosdjgpp WATT_ROOT=$(WATT32)
+
+libmbedtls: $(LIB_MBEDTLS)
+$(LIB_MBEDTLS):
+	$(MAKE) $(MPARA) -C $(MBEDTLS) -f Makefile lib
+
 libwatt32: $(LIB_WATT)
 $(LIB_WATT):
-	DJ_PREFIX=$(DJGPP) $(MAKE) -C $(WATT32)/src -f DJGPP.MAK
-
-libcurl: $(LIB_CURL)
-$(LIB_CURL): $(LIB_SSL) $(LIB_Z)
-	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.dj
-
-libopenssl: $(LIB_SSL)
-$(LIB_SSL): $(LIB_WATT)
-	$(MAKE) $(MPARA) -C $(OPENSSL) -f Makefile build_libs
-	$(MAKE) $(MPARA) -C $(OPENSSL) -f Makefile apps/openssl.exe
+	DJ_PREFIX=$(dir $(shell which $(CC))) $(MAKE) $(MPARA) -C $(WATT32)/src -f djgpp.mak
 
 libz: $(LIB_Z)
 $(LIB_Z):
@@ -145,7 +145,7 @@ zip: all doc
 doc:
 	rm -rf $(DOCDIR)
 	mkdir -p $(DOCDIR)
-	cd doc && jsdoc -c jsdoc.conf.json -d ../$(DOCDIR)
+	for i in $(JSDOC_TEMPLATES); do [ -d $$i ] && cd doc && jsdoc --verbose -t $$i -c jsdoc.conf.json -d ../$(DOCDIR) && break; done
 	cp doc/*.png $(DOCDIR)
 
 init:
@@ -160,7 +160,7 @@ clean:
 		$(MAKE) -C $$dir -f Makefile $@; \
 	done
 
-distclean: clean jsclean dzclean wattclean dxeclean muclean zclean sslclean curlclean
+distclean: clean jsclean dzclean wattclean dxeclean muclean zclean mbedtlsclean curlclean
 	rm -rf $(DOCDIR) TEST.TXT JSLOG.TXT *.dxe
 
 dzclean:
@@ -168,9 +168,6 @@ dzclean:
 
 jsclean:
 	$(MAKE) -C $(MUJS) clean
-
-wattclean:
-	$(MAKE) -C $(WATT32)/src -f DJGPP.MAK clean
 
 zclean:
 	$(MAKE) -C $(ZLIB) -f Makefile.dojs clean
@@ -184,12 +181,15 @@ muclean:
 apclean:
 	$(MAKE) -C $(ALPNG) -f Makefile.zlib clean
 
-sslclean:
-	$(MAKE) -C $(OPENSSL) -f Makefile clean
+mbedtlsclean:
+	$(MAKE) -C $(MBEDTLS) -f Makefile clean
 
 curlclean:
-	$(MAKE) -C $(CURL)/lib -f Makefile.dj clean
+	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.mk CFG=-zlib-mbedtls-watt TRIPLET=i586-pc-msdosdjgpp WATT_ROOT=$(WATT32) clean
 	rm -f $(CURL)/lib/libcurl.a
+
+wattclean:
+	$(MAKE) -C $(WATT32)/src -f djgpp.mak clean
 
 fixnewlines:
 	find . -iname *.sh -exec dos2unix -v \{\} \;

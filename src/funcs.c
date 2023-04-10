@@ -742,6 +742,23 @@ static void f_GetLoadedLibraries(js_State *J) {
 }
 
 /**
+ * @brief get environment variable
+ *
+ * @param J VM state.
+ */
+static void f_GetEnv(js_State *J) {
+    const char *var = js_tostring(J, 1);
+
+    const char *val = getenv(var);
+
+    if (val) {
+        js_pushstring(J, val);
+    } else {
+        js_pushnull(J);
+    }
+}
+
+/**
  * @brief set CTRL-C/CTRL-BREAK handling.
  *
  * @param J the JS context.
@@ -794,6 +811,7 @@ void init_funcs(js_State *J, int argc, char *argv[], int idx) {
     NFUNCDEF(J, StringToBytes, 1);
     NFUNCDEF(J, BytesToString, 1);
     NFUNCDEF(J, NamedFunction, 3);
+    NFUNCDEF(J, GetEnv, 1);
 
     NFUNCDEF(J, Debug, 0);
     NFUNCDEF(J, Debugln, 0);

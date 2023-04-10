@@ -1,4 +1,4 @@
-DXE_LDFLAGS	= -L../$(CURL)/lib -L../$(OPENSSL) -L../$(ZLIB) -lcurl -lssl -lcrypto -lz
+DXE_LDFLAGS	= -L../$(CURL)/lib -L../$(ZLIB) -L../$(MBEDTLS)/library  -lcurl -lmbedtls -lmbedx509 -lmbedcrypto -lz
 DXE_NAME	= curl.dxe
 
 include ../Makefile.dxemk

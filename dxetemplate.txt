@@ -27,6 +27,8 @@
 
 #include "zipfile.h"
 #include "intarray.h"
+#include "bytearray.h"
+#include "util.h"
 
 // symbols without include file from libgcc
 extern BOOL _watt_do_exit;
@@ -82,6 +84,7 @@ stricmp
 strncasecmp
 strncpy
 strtol
+strtoll
 
 // memory/system
 atexit
@@ -254,3 +257,10 @@ _osminor
 close_s
 gmtime
 delay
+
+ut_clone_string
+ByteArray_create
+ByteArray_fromStruct
+alarm
+ByteArray_destroy
+ByteArray_push

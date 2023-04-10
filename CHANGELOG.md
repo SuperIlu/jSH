@@ -1,3 +1,7 @@
+**V0.95 **
+* Added `GetEnv()`
+* Switched over to curl 8.0.1 with mbedTLS 2.28.3
+
 **V0.92 updates, init?**
 * updated openssl, curl and kuba-zip
 * added `IniFile` class for reading INI files

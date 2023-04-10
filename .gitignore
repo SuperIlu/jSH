@@ -13,7 +13,7 @@ sys-include/*
 *.a
 *.d
 3rdparty/dzcomm/obj/djgpp/asmdef.s
-doc/
+doc/html/
 dexport.c
 *.dxe
 jSH-cppcheck-build-dir/
@@ -52,6 +52,3 @@ cacert.pem
 3rdparty/openssl-1.1.1n/include/crypto/bn_conf.h
 3rdparty/openssl-1.1.1n/include/crypto/dso_conf.h
 3rdparty/openssl-1.1.1n/include/openssl/opensslconf.h
-3rdparty/watt32-2.2dev.rel.11/src/build/djgpp/cflags.h
-3rdparty/watt32-2.2dev.rel.11/src/build/djgpp/chksum0.iS
-3rdparty/watt32-2.2dev.rel.11/src/build/djgpp/cpumodel.iS
