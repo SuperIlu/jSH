@@ -43,20 +43,33 @@ static void f_IpDebug(js_State *J) { watt_pushipaddr(J, watt_toipaddr(J, 1)); }
 #endif
 
 /**
- * @brief get the local IP address.
- * GetLocalIpAddress():number[]
+ * @brief create a map of all known ipv4 interfaces with their ip-addresses. DOS only knows a single fake 'eth0' interface containing he IP settings of Watt and a fake 'lo'
+ * interface.
  *
- * @param J VM state.
+ * GetNetworkInterfaces(): {"eth0":{"inet":[192.168.1.2], "netmask":[255,255,255,0]}, "lo":{"inet":[127.0.0.1], "netmask":[255,0,0,0]}}
  */
-static void f_GetLocalIpAddress(js_State *J) { watt_pushipaddr(J, _gethostid()); }
+static void f_GetNetworkInterfaces(js_State *J) {
+    js_newobject(J);
+    {
+        js_newobject(J);
+        {
+            watt_pushipaddr(J, _gethostid());
+            js_setproperty(J, -2, "inet");
+            watt_pushipaddr(J, sin_mask);
+            js_setproperty(J, -2, "netmask");
+        }
+        js_setproperty(J, -2, "eth0");
 
-/**
- * @brief get the netmask.
- * GetNetworkMask():number[]
- *
- * @param J VM state.
- */
-static void f_GetNetworkMask(js_State *J) { watt_pushipaddr(J, sin_mask); }
+        js_newobject(J);
+        {
+            watt_pushipaddr(J, IP(127, 0, 0, 1));
+            js_setproperty(J, -2, "inet");
+            watt_pushipaddr(J, IP(255, 0, 0, 0));
+            js_setproperty(J, -2, "netmask");
+        }
+        js_setproperty(J, -2, "lo");
+    }
+}
 
 /**
  * @brief resolve an IP address using DNS.
@@ -115,8 +128,11 @@ static void f_GetHostname(js_State *J) {
  */
 static void f_GetDomainname(js_State *J) {
     char buffer[WATT_NAME_BUFFER_SIZE];
-    getdomainname(buffer, sizeof(buffer));
-    js_pushstring(J, buffer);
+    if (getdomainname(buffer, sizeof(buffer)) == 0) {
+        js_pushstring(J, buffer);
+    } else {
+        js_pushnull(J);
+    }
 }
 
 /***********************
@@ -128,9 +144,8 @@ static void f_GetDomainname(js_State *J) {
  * @param J VM state.
  */
 void init_watt(js_State *J) {
-    char buffer[WATT_NAME_BUFFER_SIZE];
-
     DEBUGF("%s\n", __PRETTY_FUNCTION__);
+
     if (!no_tcpip) {
         // WATT32 init
 #ifdef DEBUG_ENABLED
@@ -139,6 +154,7 @@ void init_watt(js_State *J) {
         _watt_do_exit = 0;
         int err = sock_init();
         if (!err) {
+            char buffer[WATT_NAME_BUFFER_SIZE];
             LOGF("WATTCP init         : %s\n", sock_init_err(err));
             LOGF("WATTCP Address      : %s\n", _inet_ntoa(NULL, _gethostid()));
             LOGF("WATTCP Network Mask : %s\n", _inet_ntoa(NULL, sin_mask));
@@ -152,8 +168,7 @@ void init_watt(js_State *J) {
         }
 
         // functions
-        NFUNCDEF(J, GetLocalIpAddress, 0);
-        NFUNCDEF(J, GetNetworkMask, 0);
+        NFUNCDEF(J, GetNetworkInterfaces, 0);
         NFUNCDEF(J, GetHostname, 0);
         NFUNCDEF(J, GetDomainname, 0);
         NFUNCDEF(J, Resolve, 1);
@@ -175,7 +190,7 @@ void init_watt(js_State *J) {
  * @param J VM state.
  * @param ip IP address in DWORD format
  */
-void watt_pushipaddr(js_State *J, DWORD ip) {
+void watt_pushipaddr(js_State *J, uint32_t ip) {
     DEBUGF("%s(): %08lX\n", __PRETTY_FUNCTION__, ip);
 
     js_newarray(J);
@@ -196,7 +211,7 @@ void watt_pushipaddr(js_State *J, DWORD ip) {
  * @param idx JS stack index.
  * @return DWORD convert IP address in JS stack format to DWORD.
  */
-DWORD watt_toipaddr(js_State *J, int idx) {
+uint32_t watt_toipaddr(js_State *J, int idx) {
     if (!js_isarray(J, idx)) {
         JS_ENOARR(J);
         return 0;

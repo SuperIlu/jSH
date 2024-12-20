@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 /***********************
 ** exported functions **

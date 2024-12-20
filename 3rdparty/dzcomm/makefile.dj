@@ -156,7 +156,7 @@ endif
 ifdef PGCC
 OFLAGS = -mpentium -O6 -ffast-math
 else
-OFLAGS = -march=i386 -O2 -ffast-math
+OFLAGS = -march=i386 -Os -ffast-math
 endif
 
 ifndef ALLEGRONOTAVAIL

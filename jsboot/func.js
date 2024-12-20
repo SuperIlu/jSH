@@ -23,6 +23,7 @@ SOFTWARE.
 /**
 Additional code taken from MDN:
 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/hypot
 
 Code samples added on or after August 20, 2010 are in the public domain (CC0). 
 No licensing notice is necessary, but if you need one, you can use: 
@@ -31,7 +32,7 @@ No licensing notice is necessary, but if you need one, you can use:
 
 /**
  * General functions.
- * @module general
+ * @module other
  */
 
 /**
@@ -75,6 +76,20 @@ RAW_BLOCKSIZE = 512;
 navigator = {
 	"appName": "jSH"
 };
+/**
+ * extract the path for a file.
+ * 
+ * @param {String} fname the file name with path
+ * @returns the path leading to the file
+ */
+function ExtractModulePath(fname) {
+	var lastSlash = fname.lastIndexOf('/');
+	if (lastSlash == -1) {
+		return "./";
+	} else {
+		return fname.substring(0, lastSlash + 1);
+	}
+}
 
 /**
  * try a specific filename which can ba a plain file or a ZIP-file entry. Throws an Exception if the file cant be read.
@@ -86,42 +101,69 @@ navigator = {
  */
 function RequireFile(name, fname) {
 	var content;
-	if (fname.indexOf(ZIP_DELIM) != -1) {
-		var parts = fname.split(ZIP_DELIM);
-		var zname = parts[0];
-		var ename = parts[1];
-		// Debugln("Require(zip) " + zname + " -> " + ename);
 
-		content = ReadZIP(zname, ename);
+	// handle nodejs module names (absolute DOS paths and relative)
+	if (fname[1] == ":") {
+		fname = fname.replace(":", "/");
+		fname = fname.replaceAt(1, ":");
 	} else {
-		content = Read(fname);
+		fname = fname.replace(":", "/");
+	}
+
+	try {
+		if (fname.indexOf(ZIP_DELIM) != -1) {
+			var parts = fname.split(ZIP_DELIM);
+			var zname = parts[0];
+			var ename = parts[1];
+			Debug("Require(zip) " + zname + " -> " + ename);
+
+			content = ReadZIP(zname, ename);
+		} else {
+			content = Read(fname);
+		}
+	} catch (e) {
+		return null;	// file errors are ignored
 	}
 	var exports = {};
+	var module = {
+		id: name,
+		path: ExtractModulePath(fname),
+		exports: exports,
+		filename: fname,
+		loaded: false,
+		children: [],
+		paths: [
+			"./",													// try local dir
+			JSBOOT_ZIP + ZIP_DELIM + JSBOOT_DIR,					// try jsboot.zip, core packages
+			JSBOOT_DIR,												// try jsboot directory, core packages
+			JSBOOT_ZIP + ZIP_DELIM + PACKAGE_DIR					// try jsboot.zip, installed packages
+		]
+	};
 	Require._cache[name] = exports;
-	try {
-		NamedFunction('exports', content, name)(exports);
-	} catch (e) {
-		Debugln("Parse error: " + e)
-		throw e;
-	}
-	// Debugln("Found " + fname);
+	NamedFunction('exports,module', content, name)(exports, module);
 	return exports;
 }
 
 /**
- * import a module. DOjS modules must put all exported symbols into an object called 'exports'.
+ * import a module.
+ * DOjS modules are CommonJS modules where all exported symbols must be put into an object called 'exports'.
+ * A module may provide an optional version using the __VERSION__ member.
+ * 
+ * @param {string} name module file name.
+ * 
+ * @returns the imported module.
+ * 
  * @example
+ * exports.__VERSION__ = 23;        // declare module version
  * exports.myVar = 0;               // will be exported
  * exports.myFunc = function() {};  // will also be exported
  * var localVar;                    // will only be accessible in the module
  * function localFunction() {};     // will also only be accessible in the module
- * @param {string} name module file name.
- * @returns the imported module.
  */
 function Require(name) {
 	// look in cache
 	if (name in Require._cache) {
-		// Debug("Require(cached) " + name);
+		Debug("Require(cached) " + name);
 		return Require._cache[name];
 	}
 
@@ -134,22 +176,106 @@ function Require(name) {
 		JSBOOT_DIR + name + '.js',								// try jsboot directory, core packages, name with .js
 		JSBOOT_ZIP + ZIP_DELIM + PACKAGE_DIR + name + '.js'		// try jsboot.zip, installed packages, name with .js
 	];
-	// Debugln("Require(names) " + JSON.stringify(names));
+	Debug("Require(names) " + JSON.stringify(names));
 
 	for (var i = 0; i < names.length; i++) {
 		var n = names[i];
-		//Debug("Require() Trying '" + n + "'");
-		try {
-			return RequireFile(name, n);
-		} catch (e) {
-			//Debug("RequireFile() " + n + " Not found" + e);
+		Debug("Require() Trying '" + n + "'");
+
+		// try to load. non-existend files lead to the next filename to be tried, parse errors will result in an error thrown
+		var parsed = RequireFile(name, n);
+		if (!parsed) {
+			Debug("RequireFile() " + n + " Not found");
 			continue;
+		} else {
+			return parsed;
 		}
 	}
 
 	throw new Error('Could not load "' + name + '"');
 }
 Require._cache = Object.create(null);
+
+/**
+ * Alias of Require() to make DOjS module loading Node.js compatible.
+ * 
+ * @see NodeJS
+ * @see Require
+ * 
+ * @param {string} name module file name.
+ * 
+ * @returns the imported module.
+ */
+require = Require;
+
+/**
+ * print a stack trace.
+ * 
+ * @param {String} msg message to print with the trace
+ */
+function Trace(msg) {
+	msg = msg || "";
+	Println("Trace: " + msg);
+	var e = new Error();
+	var lines = e.stackTrace.split('\n');
+	for (var i = 2; i < lines.length; i++) {
+		Println(lines[i]);
+	}
+}
+
+/**
+ * provide console.log()
+ * @see NodeJS
+ */
+console = {
+	_timers: {},
+	_counters: {},
+
+	log: Println,
+	info: Println,
+	warn: Println,
+	error: Println,
+	trace: Trace,
+	time: function (name) {
+		name = name || "default";
+		this._timers[name] = new StopWatch();
+		this._timers[name].Start();
+	},
+	timeEnd: function (name) {
+		name = name || "default";
+		if (!this._timers[name]) {
+			throw new Error("unknown timer: " + name);
+		}
+		this._timers[name].Stop();
+		this._timers[name].Print(name);
+		delete this._timers[name];
+	},
+	timeLog: function (name) {
+		name = name || "default";
+		if (!this._timers[name]) {
+			throw new Error("unknown timer: " + name);
+		}
+		this._timers[name].Print(name);
+	},
+	count: function (name) {
+		name = name || "default";
+		if (this._counters[name]) {
+			this._counters[name]++;
+		} else {
+			this._counters[name] = 1;
+		}
+		Println(name + ": " + this._counters[name]);
+	},
+	countReset: function (name) {
+		name = name || "default";
+		this._counters[name] = 0;
+	},
+	assert: function (val, msg) {
+		if (!val) {
+			Println("Assertion failed: " + JSON.stringify(msg));
+		}
+	}
+};
 
 /**
  * include a module. The exported functions are copied into global scope.
@@ -159,7 +285,7 @@ Require._cache = Object.create(null);
 function Include(name) {
 	var e = Require(name);
 	for (var key in e) {
-		//Debugln("Include(toGlobal) " + key);
+		Debug("Include(toGlobal) " + key);
 		global[key] = e[key];
 	}
 }
@@ -179,6 +305,22 @@ Error.prototype.toString = function () {
 	if (this.stackTrace) { return this.name + ': ' + this.message + this.stackTrace; }
 	return this.name + ': ' + this.message;
 };
+
+/**
+ * prefix a filename with the ZIP file the started script came from. The filename is not modified if the script was not loaded from a ZIP file.
+ * 
+ * @param {string} fname file name.
+ * 
+ * @returns {string} a ZIP-filename if the running script was loaded from a ZIP file or the passed filename.
+ */
+function ZipPrefix(fname) {
+	if (ARGS[0].indexOf(ZIP_DELIM) != -1) {
+		var parts = ARGS[0].split(ZIP_DELIM);
+		return parts[0] + ZIP_DELIM + fname;
+	} else {
+		return fname;
+	}
+}
 
 /**
  * print startup info with screen details.
@@ -213,6 +355,7 @@ function StartupInfo() {
 		}
 	}
 }
+StartupInfo();
 
 /**
  * get char code.
@@ -258,6 +401,30 @@ if (!String.prototype.endsWith) {
 		return this.substring(this_len - search.length, this_len) === search;
 	};
 }
+if (!String.prototype.replaceAt) {
+	String.prototype.replaceAt = function (index, replacement) {
+		return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+	}
+}
+
+// add hypot to Math
+if (!Math.hypot) Math.hypot = function () {
+	var max = 0;
+	var s = 0;
+	var containsInfinity = false;
+	for (var i = 0; i < arguments.length; ++i) {
+		var arg = Math.abs(Number(arguments[i]));
+		if (arg === Infinity)
+			containsInfinity = true
+		if (arg > max) {
+			s *= (max / arg) * (max / arg);
+			max = arg;
+		}
+		s += arg === 0 && max === 0 ? 0 : (arg / max) * (arg / max);
+	}
+	return containsInfinity ? Infinity : (max === 1 / 0 ? 1 / 0 : max * Math.sqrt(s));
+};
+
 
 /**
  * create stop watch for benchmarking
@@ -280,7 +447,7 @@ StopWatch.prototype.Stop = function () {
 	this.stop = MsecTime();
 	if (!this.start) {
 		this.Reset();
-		throw "StopWatch.Stop() called before StopWatch.Start()!"
+		throw new Error("StopWatch.Stop() called before StopWatch.Start()!");
 	}
 };
 /**
@@ -295,10 +462,11 @@ StopWatch.prototype.Reset = function () {
  * @returns {number} runtime in ms.
  */
 StopWatch.prototype.ResultMs = function () {
-	if (!this.start || !this.stop) {
-		throw "start or end time missing!";
+	if (this.stop) {
+		return this.stop - this.start;
+	} else {
+		return MsecTime() - this.start;
 	}
-	return this.stop - this.start;
 };
 /**
 * convert result to a readable string.
@@ -340,6 +508,16 @@ StopWatch.prototype.Print = function (name) {
 };
 
 /**
+ * get a random integer between [0..max[
+ * 
+ * @param {number} max max value to return (eclusive).
+ */
+function GetRandomInt(max) {
+	return Math.floor(Math.random() * Math.floor(max));
+}
+
+
+/**
  * Write the given value to io-port 80h to be displayed by a POST card.
  * 
  * @param {number} val value to write to 0x80.
@@ -370,7 +548,7 @@ var _lptPorts = GetParallelPorts();
  */
 function LPTRawData(port, data) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	var addr = _lptPorts[port];
 
@@ -395,7 +573,7 @@ function LPTRawData(port, data) {
  */
 function LPTRawStatus(port) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	var addr = _lptPorts[port];
 
@@ -412,7 +590,7 @@ function LPTRawStatus(port) {
  */
 function LPTRawControl(port, bits) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	var addr = _lptPorts[port];
 
@@ -427,7 +605,7 @@ function LPTRawControl(port, bits) {
  */
 function LPTReset(port) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	_LPTReset(port);
 }
@@ -441,7 +619,7 @@ function LPTReset(port) {
  */
 function LPTSend(port, data) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	_LPTSend(port, data);
 }
@@ -454,7 +632,7 @@ function LPTSend(port, data) {
  */
 function LPTStatus(port) {
 	if (port < 0 && ports >= _lptPorts.length) {
-		throw 'LPT port out of range';
+		throw new Error('LPT port out of range');
 	}
 	return _LPTStatus(port);
 }
@@ -493,7 +671,7 @@ function Exit(code) { Quit(code); }
  * @property {*} CONTROL.LINEFEED pin 14, inverted (out)
  * @property {*} CONTROL.STROBE pin 1, inverted (out)
  */
-PARALLEL = {
+var PARALLEL = {
 	DATA: {
 		ADDR: 0,
 		BIT0: (1 << 0),
@@ -764,5 +942,3 @@ var K_Control_EUp = 0x28d;
 var K_Control_EDown = 0x291;
 var K_Control_EInsert = 0x292;
 var K_Control_EDelete = 0x293;
-
-StartupInfo();

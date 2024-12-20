@@ -257,7 +257,7 @@ PKT_STUB = pkt_stub.h
 #
 prefix = /dev/env/DJDIR/net/watt
 
-CFLAGS = -O3 -g -I. -I../inc -DWATT32_BUILD -W -Wall -Wno-strict-aliasing \
+CFLAGS = -Os -g -I. -I../inc -DWATT32_BUILD -W -Wall -Wno-strict-aliasing \
          -march=i386 -mtune=i586
 
 STAT_LIB = ../lib/libwatt.a

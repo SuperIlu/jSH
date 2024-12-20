@@ -22,12 +22,11 @@ SOFTWARE.
 //////
 // test generic functions
 //Println(JSON.stringify(WattIpDebug([1, 2, 3, 4])));
-Println("GetLocalIpAddress() = " + JSON.stringify(GetLocalIpAddress()));
-Println("GetNetworkMask()    = " + JSON.stringify(GetNetworkMask()));
-Println("GetDomainname()     = " + JSON.stringify(GetDomainname()));
-Println("GetHostname()       = " + JSON.stringify(GetHostname()));
-Println("Resolve()           = " + JSON.stringify(Resolve("www.heise.de")));
-Println("ResolveIp()         = " + JSON.stringify(ResolveIp([193, 99, 144, 80])));
+Println("GetNetworkInterfaces() = " + JSON.stringify(GetNetworkInterfaces()));
+Println("GetDomainname()        = " + JSON.stringify(GetDomainname()));
+Println("GetHostname()          = " + JSON.stringify(GetHostname()));
+Println("Resolve()              = " + JSON.stringify(Resolve("www.heise.de")));
+Println("ResolveIp()            = " + JSON.stringify(ResolveIp([193, 99, 144, 80])));
 
 //////
 // test UDP socket send

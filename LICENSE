@@ -6,6 +6,10 @@ Duktape is released under MIT license.
 
 DZComm is released as gift-ware.
 
+IPX and dosbuffer sub-system:
+This code is taken from the game Cylindrix by Hotwarez LLC, Goldtree Enterprises.
+It was released under GPLv2.
+
 CWSDPMI.EXE:
 CWSDPMI (http://sandmann.dotster.com/cwsdpmi/) DPMI host is licensed under GPL.
 The documentation states:

@@ -23,7 +23,7 @@ capture/
 tmp/
 TEST.DB
 W32DHCP.TMP
-cacert.pem
+CACERT.PEM
 3rdparty/curl-7.80.0/lib/curl_config.h
 3rdparty/openssl-1.1.1n/libcrypto.pc
 3rdparty/openssl-1.1.1n/libssl.pc
@@ -52,3 +52,7 @@ cacert.pem
 3rdparty/openssl-1.1.1n/include/crypto/bn_conf.h
 3rdparty/openssl-1.1.1n/include/crypto/dso_conf.h
 3rdparty/openssl-1.1.1n/include/openssl/opensslconf.h
+dosbox-staging/
+dosbox.exe - Shortcut.lnk
+scripts/testdata/
+OUTPUT.PDF

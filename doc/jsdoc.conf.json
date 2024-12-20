@@ -6,6 +6,7 @@
 			"classes.js",
 			"conio.js",
 			"p5js.js",
+			"PDFGen.js",
 			"../jsboot/socket.js",
 			"../jsboot/func.js",
 			"../jsboot/file.js"
@@ -21,7 +22,7 @@
 			"outputSourceFiles": false
 		},
 		"better-docs": {
-			"name": "jSH V0.95",
+			"name": "jSH V0.96",
 			"hideGenerator": true,
 			"navLinks": [
 				{

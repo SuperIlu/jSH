@@ -38,14 +38,17 @@ SOFTWARE.
 #include "jSH.h"
 #include "jsconio.h"
 #include "intarray.h"
+#include "bytearray.h"
 #include "screen.h"
 #include "gccint8.h"
 #include "inifile.h"
+#include "vgm.h"
 
 /**************
 ** Variables **
 **************/
 FILE *logfile;  //!< logfile for LOGF(), LOG(), DEBUG() DEBUGF() and Print()
+char *logfile_name;
 
 const char *lastError;
 
@@ -153,12 +156,96 @@ static void jsh_loadfile_zip(js_State *J, const char *fname) {
 }
 
 /**
+ * @brief run the given script.
+ *
+ * @param script the script filename.
+ * @param debug enable debug output.
+ */
+static void run_script(char *script, bool debug, int argc, char *argv[], int idx) {
+    js_State *J;
+    // create logfile
+    if (logfile_name) {
+        logfile = fopen(logfile_name, "a");
+        if (!logfile) {
+            fprintf(stderr, "Could not open/create logfile %s.\n", logfile_name);
+            exit(1);
+        }
+        setbuf(logfile, 0);
+    } else {
+        logfile = NULL;
+    }
+
+    // create VM
+    J = js_newstate(NULL, NULL, 0);
+    js_atpanic(J, Panic);
+    js_setreport(J, Report);
+
+    // write startup message
+    LOG("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    LOGF("jSH %s starting with file %s\n", JSH_VERSION_STR, script);
+
+    // detect hardware and initialize subsystems
+    init_funcs(J, argc, argv, idx);
+    init_file(J);
+    init_conio(J);
+    init_lowlevel(J);
+    init_watt(J);
+    init_socket(J);
+    init_zipfile(J);
+    init_intarray(J);
+    init_bytearray(J);
+    init_screen(J);
+    init_inifile(J);
+    init_vgm(J);
+
+    // do some more init from JS
+    if (jsh_file_exists(JSBOOT_ZIP)) {
+        DEBUG("JSBOOT.ZIP found, using archive\n");
+        PROPDEF_S(J, JSBOOT_ZIP ZIP_DELIM_STR JSBOOT_DIR, JSBOOT_VAR);
+        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_FUNC);
+        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_FILE);
+        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_SOCKET);
+    } else {
+        DEBUG("JSBOOT.ZIP NOT found, using plain files\n");
+        PROPDEF_S(J, JSBOOT_DIR, JSBOOT_VAR);
+        jsh_do_file(J, JSINC_FUNC);
+        jsh_do_file(J, JSINC_FILE);
+        jsh_do_file(J, JSINC_SOCKET);
+    }
+
+    // overwrites DEBUG property from func.js
+    PROPDEF_B(J, debug, "DEBUG");
+
+    // load main file and run it
+    lastError = NULL;
+    jsh_do_file(J, script);
+    LOG("jSH Shutdown...\n");
+    js_freestate(J);
+    shutdown_vgm();
+    jsh_shutdown_libraries();
+    if (logfile) {
+        fclose(logfile);
+    }
+
+    if (lastError) {
+        fputs(lastError, stdout);
+        fputs("\njSH ERROR\n", stdout);
+    } else {
+        fputs("jSH OK\n", stdout);
+    }
+    fflush(stdout);
+}
+
+/***********************
+** exported functions **
+***********************/
+/**
  * @brief check if a file exists for reading.
  *
  * @param filename the name of the file.
  * @return true if the file exists and can be opened for reading, else false.
  */
-static bool jsh_file_exists(const char *filename) {
+bool jsh_file_exists(const char *filename) {
     FILE *f = fopen(filename, "r");
     if (f) {
         fclose(f);
@@ -197,87 +284,6 @@ int jsh_do_file(js_State *J, const char *fname) {
 }
 
 /**
- * @brief run the given script.
- *
- * @param script the script filename.
- * @param debug enable debug output.
- */
-static void run_script(char *script, bool debug, int argc, char *argv[], int idx, char *logfile_name) {
-    js_State *J;
-    // create logfile
-    if (logfile_name) {
-        logfile = fopen(logfile_name, "a");
-        if (!logfile) {
-            fprintf(stderr, "Could not open/create logfile %s.\n", logfile_name);
-            exit(1);
-        }
-        setbuf(logfile, 0);
-    } else {
-        logfile = NULL;
-    }
-
-    // create VM
-    J = js_newstate(NULL, NULL, 0);
-    js_atpanic(J, Panic);
-    js_setreport(J, Report);
-
-    // write startup message
-    LOG("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
-    LOGF("jSH %s starting with file %s\n", JSH_VERSION_STR, script);
-
-    // detect hardware and initialize subsystems
-    init_funcs(J, argc, argv, idx);
-    init_file(J);
-    init_conio(J);
-    init_lowlevel(J);
-    init_watt(J);
-    init_socket(J);
-    init_zipfile(J);
-    init_intarray(J);
-    init_screen(J);
-    init_inifile(J);
-
-    // do some more init from JS
-    if (jsh_file_exists(JSBOOT_ZIP)) {
-        DEBUG("JSBOOT.ZIP found, using archive\n");
-        PROPDEF_S(J, JSBOOT_ZIP ZIP_DELIM_STR JSBOOT_DIR, JSBOOT_VAR);
-        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_FUNC);
-        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_FILE);
-        jsh_do_file(J, JSBOOT_ZIP ZIP_DELIM_STR JSINC_SOCKET);
-    } else {
-        DEBUG("JSBOOT.ZIP NOT found, using plain files\n");
-        PROPDEF_S(J, JSBOOT_DIR, JSBOOT_VAR);
-        jsh_do_file(J, JSINC_FUNC);
-        jsh_do_file(J, JSINC_FILE);
-        jsh_do_file(J, JSINC_SOCKET);
-    }
-
-    // overwrites DEBUG property from func.js
-    PROPDEF_B(J, debug, "DEBUG");
-
-    // load main file and run it
-    lastError = NULL;
-    jsh_do_file(J, script);
-    LOG("jSH Shutdown...\n");
-    js_freestate(J);
-    jsh_shutdown_libraries();
-    if (logfile) {
-        fclose(logfile);
-    }
-
-    if (lastError) {
-        fputs(lastError, stdout);
-        fputs("\njSH ERROR\n", stdout);
-    } else {
-        fputs("jSH OK\n", stdout);
-    }
-    fflush(stdout);
-}
-
-/***********************
-** exported functions **
-***********************/
-/**
  * @brief register a library.
  *
  * @param name pointer to a name. This function will make a copy of the string.
@@ -287,7 +293,7 @@ static void run_script(char *script, bool debug, int argc, char *argv[], int idx
  * @return true if registration succeeded, else false.
  */
 bool jsh_register_library(const char *name, void *handle, void (*shutdown)(void)) {
-    DEBUGF("Registering library %s. Shutdown function %p\n", shutdown);
+    DEBUGF("Registering library %s. Shutdown function %p\n", name, shutdown);
 
     // get new entry
     library_t *new_entry = calloc(1, sizeof(library_t));
@@ -338,6 +344,28 @@ bool jsh_check_library(const char *name) {
 }
 
 /**
+ * @brief cloe and re-open logfile to flush() all data and make the logfile accessible from Javascript.
+ */
+void jsh_logflush() {
+    if (logfile) {
+        // close current logfile
+        fclose(logfile);
+
+        // recreate logfile
+        if (logfile_name) {
+            logfile = fopen(logfile_name, "a");
+            if (!logfile) {
+                fprintf(stderr, "Could not open/create logfile %s.\n", logfile_name);
+                exit(1);
+            }
+            setbuf(logfile, 0);
+        } else {
+            logfile = NULL;
+        }
+    }
+}
+
+/**
  * @brief main entry point.
  *
  * @param argc command line parameters.
@@ -349,11 +377,11 @@ int main(int argc, char **argv) {
     char *script = NULL;
     bool debug = false;
     bool do_logfile = true;
-    char *logfile_name = LOGFILE;
     int opt;
 
     // check parameters
-    while ((opt = getopt(argc, argv, "dnl:")) != -1) {
+    logfile_name = LOGFILE;
+    while ((opt = getopt(argc, argv, "tdnl:")) != -1) {
         switch (opt) {
             case 'd':
                 debug = true;
@@ -388,7 +416,7 @@ int main(int argc, char **argv) {
     }
 
     pctimer_init(1000 / SYSTICK_RESOLUTION);
-    run_script(script, debug, argc, argv, optind, logfile_name);
+    run_script(script, debug, argc, argv, optind);
     pctimer_exit();
 
     exit(0);

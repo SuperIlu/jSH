@@ -1,0 +1,14 @@
+all: $(DXE_NAME) check_exports
+
+clean distclean:
+	$(RMPRG) -rf *.dxe *.d *.o *.undef
+
+%.o: %.c
+	$(CC) -o $@ -c $(CFLAGS) $(DXE_CFLAGS) $<
+
+%.dxe: %.o $(DXE_FILES)
+	$(DXE3GEN) -o $@ $^ $(DXE_LDFLAGS) -U -E _init_ -E _shutdown_ -V | tee $(basename $@).undef | sort
+	$(CPPRG) $@ $(JSHPATH)
+
+check_exports: $(DXE_NAME) $(JSHPATH)/$(DXE_TEMPLATE)
+	$(PYTHONPRG) $(JSHPATH)/check_exports.py $(JSHPATH)/$(DXE_TEMPLATE) $(basename $<).undef

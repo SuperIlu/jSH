@@ -8,14 +8,14 @@ THIRDPARTY	= 3rdparty/
 MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
 KUBAZIP		= $(THIRDPARTY)/zip-0.2.3
-ZLIB		= $(THIRDPARTY)/zlib-1.2.12
+ZLIB		= $(THIRDPARTY)/zlib-1.3.1
 PCTIMER     = $(THIRDPARTY)/pctimer
 INI			= $(THIRDPARTY)/ini-20220806/src
 WATT32		= $(THIRDPARTY)/Watt-32
-CURL		= $(THIRDPARTY)/curl-8.0.1
-MBEDTLS		= $(THIRDPARTY)/mbedtls-2.28.3
+CURL		= $(THIRDPARTY)/curl-8.11.0
+MBEDTLS		= $(THIRDPARTY)/mbedtls-3.6.2
 
-JSDOC_TEMPLATES=/home/ilu/.nvm/versions/node/v17.4.0/lib/node_modules/better-docs /usr/lib/node_modules/better-docs /tmp
+JSDOC_TEMPLATES ?= $(shell npm root)/better-docs $(shell npm root -g)/better-docs
 
 LIB_DZCOMM	= $(DZCOMMDIR)/lib/djgpp/libdzcom.a
 LIB_MUJS	= $(MUJS)/build/release/libmujs.a
@@ -26,7 +26,7 @@ LIB_CURL	= $(CURL)/libcurl.a
 
 # compiler
 CDEF		= -DGC_BEFORE_MALLOC #-DDEBUG_ENABLED #-DMEMDEBUG 
-CFLAGS		= -MMD -Wall -std=gnu99 -O2 -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -Wmissing-prototypes $(CDEF)
+CFLAGS		= -MMD -Wall -std=gnu99 -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -Wmissing-prototypes $(CDEF)
 INCLUDES	= \
 	-I$(realpath $(MUJS)) \
 	-I$(realpath $(DZCOMMDIR))/include \
@@ -34,6 +34,7 @@ INCLUDES	= \
 	-I$(realpath $(KUBAZIP))/src \
 	-I$(realpath $(ZLIB)) \
 	-I$(realpath $(MBEDTLS))/include \
+	-I$(realpath $(MBEDTLS))/library \
 	-I$(realpath $(CURL))/include \
 	-I$(realpath $(PCTIMER)) \
 	-I$(realpath $(INI))/ \
@@ -48,6 +49,7 @@ EXE				= JSH.EXE
 RELZIP			= jsh.zip
 
 # dirs/files
+JSHPATH			= $(realpath .)
 BUILDDIR		= build
 DOCDIR			= doc/html
 DXE_TEMPLATE	= dxetemplate.txt
@@ -64,7 +66,30 @@ DXE3GEN = dxe3gen
 DXE3RES = dxe3res
 export
 
+## other tools used in Makefile
+AWKPRG		= awk
+CATPRG		= cat
+CPPRG		= cp
+CUTPRG		= cut
+CURLPRG		= curl
+ECHOPRG		= echo
+EGREPPRG	= egrep
+FINDPRG		= find
+GREPPRG		= grep
+JSDOCPRG	= jsdoc
+MKDIRPRG	= mkdir
+PYTHONPRG	= python3
+RMPRG		= rm
+SEDPRG		= sed
+SHPRG		= bash
+SORTPRG		= sort
+UNIQPRG		= uniq
+ZIPPRG		= zip
+FONTCONV	= GrxFntConv
+NPM_INSTALL = npm install -g
+
 PARTS= \
+	$(BUILDDIR)/vgm.o \
 	$(BUILDDIR)/zip.o \
 	$(BUILDDIR)/pctimer/gccint8.o \
 	$(BUILDDIR)/file.o \
@@ -83,7 +108,7 @@ PARTS= \
 	$(BUILDDIR)/ini/ini.o \
 	$(BUILDDIR)/dexport.o
 
-DXE_DIRS := $(wildcard *.dxelib)
+DXE_DIRS := $(wildcard plugins/*.dxelib)
 
 all: init libmujs dzcomm libwatt32 libz libcurl $(EXE) $(DXE_DIRS) JSBOOT.ZIP
 
@@ -131,37 +156,37 @@ $(DXE_DIRS):
 	$(MAKE) -C $@
 
 $(DXE_EXPORTS): dxetemplate.txt $(MUJS)/mujs.h
-	python3 ./extract_functions.py $(DXE_TEMPLATE) $(MUJS)/mujs.h $@
+	$(PYTHONPRG) ./extract_functions.py $(DXE_TEMPLATE) $(MUJS)/mujs.h $@
 
 JSBOOT.ZIP: $(shell find jsboot/ -type f)
-	rm -f $@
-	zip -9 -r $@ jsboot/
+	$(RMPRG) -f $@
+	$(ZIPPRG) -9 -r $@ jsboot/
 
 zip: all doc
-	rm -f $(RELZIP)
-	curl --remote-name --time-cond cacert.pem https://curl.se/ca/cacert.pem
-	zip -9 -v -r $(RELZIP) $(EXE) JC.JS JC.BAT CWSDPMI.EXE LICENSE README.md CHANGELOG.md JSBOOT.ZIP JPM.BAT cacert.pem scripts/ $(DOCDIR) *.dxe
+	$(RMPRG) -f $(RELZIP)
+	$(CURLPRG) -o CACERT.PEM https://curl.se/ca/cacert.pem
+	$(ZIPPRG) -9 -v -r $(RELZIP) $(EXE) JC.JS JC.BAT CWSDPMI.EXE LICENSE README.md CHANGELOG.md JSBOOT.ZIP JPM.BAT CACERT.PEM scripts/ $(DOCDIR) *.dxe
 
 doc:
-	rm -rf $(DOCDIR)
-	mkdir -p $(DOCDIR)
-	for i in $(JSDOC_TEMPLATES); do [ -d $$i ] && cd doc && jsdoc --verbose -t $$i -c jsdoc.conf.json -d ../$(DOCDIR) && break; done
-	cp doc/*.png $(DOCDIR)
+	$(RMPRG) -rf $(DOCDIR)
+	$(MKDIRPRG) -p $(DOCDIR)
+	# if this fails add JSDOC_TEMPLATES='<location(s) to look for templates>' to your make invocation
+	for i in $(JSDOC_TEMPLATES); do [ -d $$i ] && cd doc && $(JSDOCPRG) --verbose -t $$i -c jsdoc.conf.json -d ../$(DOCDIR) && break; done
 
 init:
-	mkdir -p $(BUILDDIR) $(BUILDDIR)/zip/src $(BUILDDIR)/pctimer $(BUILDDIR)/ini
+	$(MKDIRPRG) -p $(BUILDDIR) $(BUILDDIR)/zip/src $(BUILDDIR)/pctimer $(BUILDDIR)/ini
 	# make sure compile time is always updated
-	rm -f $(BUILDDIR)/jSH.o
+	$(RMPRG) -f $(BUILDDIR)/jSH.o
 
 clean:
-	rm -rf $(BUILDDIR)/
-	rm -f $(PARTS) $(EXE) $(ZIP) JSLOG.TXT JSBOOT.ZIP cacert.pem
+	$(RMPRG) -rf $(BUILDDIR)/
+	$(RMPRG) -f $(PARTS) $(EXE) $(ZIP) JSLOG.TXT JSBOOT.ZIP CACERT.PEM
 	for dir in $(DXE_DIRS); do \
 		$(MAKE) -C $$dir -f Makefile $@; \
 	done
 
 distclean: clean jsclean dzclean wattclean dxeclean muclean zclean mbedtlsclean curlclean
-	rm -rf $(DOCDIR) TEST.TXT JSLOG.TXT *.dxe
+	$(RMPRG) -rf $(DOCDIR) TEST.TXT JSLOG.TXT *.dxe
 
 dzclean:
 	$(MAKE) -C $(DZCOMMDIR) clean
@@ -173,10 +198,10 @@ zclean:
 	$(MAKE) -C $(ZLIB) -f Makefile.dojs clean
 
 dxeclean:
-	rm -f $(DXE_EXPORTS)
+	$(RMPRG) -f $(DXE_EXPORTS)
 
 muclean:
-	rm -f $(MUJS)/build/release/libmujs.a
+	$(RMPRG) -f $(MUJS)/build/release/libmujs.a
 
 apclean:
 	$(MAKE) -C $(ALPNG) -f Makefile.zlib clean
@@ -186,13 +211,20 @@ mbedtlsclean:
 
 curlclean:
 	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.mk CFG=-zlib-mbedtls-watt TRIPLET=i586-pc-msdosdjgpp WATT_ROOT=$(WATT32) clean
-	rm -f $(CURL)/lib/libcurl.a
+	$(RMPRG) -f $(CURL)/lib/libcurl.a
 
 wattclean:
 	$(MAKE) -C $(WATT32)/src -f djgpp.mak clean
 
 fixnewlines:
-	find . -iname *.sh -exec dos2unix -v \{\} \;
+	$(FINDPRG) . -iname *.sh -exec dos2unix -v \{\} \;
+
+node_install:
+	$(NPM_INSTALL) jsdoc
+	$(NPM_INSTALL) better-docs
+	$(NPM_INSTALL) @babel/core @babel/cli
+	$(NPM_INSTALL) @babel/preset-env
+	$(NPM_INSTALL) @babel/plugin-transform-exponentiation-operator
 
 .PHONY: clean distclean init doc $(DXE_DIRS)
 

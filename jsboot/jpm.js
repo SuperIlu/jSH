@@ -316,7 +316,6 @@ currentCmd = "";
 keepRunning = true;
 
 while (keepRunning) {
-	CurlRandom();
 	var keyCode = GetXKey();
 	if (keyCode == K_BackSpace) {
 		// delete last character

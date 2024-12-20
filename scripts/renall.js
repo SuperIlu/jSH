@@ -19,15 +19,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-if (args.length < 3) {
+if (ARGS.length < 3) {
 	Println("Usage:");
 	Println("   jSH.exe renall.js <dir> <old ext> <new ext>");
 	Exit(1);
 }
 
-var dir = args[0];
-var oldExt = args[1].toUpperCase();
-var newExt = args[2].toUpperCase();
+var dir = ARGS[0];
+var oldExt = ARGS[1].toUpperCase();
+var newExt = ARGS[2].toUpperCase();
 
 var files = List(dir);
 for (var i = 0; i < files.length; i++) {

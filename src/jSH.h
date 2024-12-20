@@ -33,8 +33,8 @@ SOFTWARE.
 
 #define SYSINFO ">>> "  //!< logfile line prefix for system messages
 
-#define JSH_VERSION 0.95         //!< version number
-#define JSH_VERSION_STR "V0.95"  //!< version number as string
+#define JSH_VERSION 0.96         //!< version number
+#define JSH_VERSION_STR "V0.96"  //!< version number as string
 
 #define JSBOOT_DIR "JSBOOT/"     //!< directory with boot files.
 #define JSBOOT_ZIP "JSBOOT.ZIP"  //!< filename for ZIP of JSBOOT
@@ -46,7 +46,7 @@ SOFTWARE.
 #define JS_ENOARR(j) js_error(j, "Array expected")                    //!< use always the same message when array expected
 #define JS_EIDX(j, idx) js_error(j, "Index out of bound (%ld)", idx)  //!< use always the same message when array index out of bound
 
-#define SYSTICK_RESOLUTION 10  //!< 10ms resolution
+#define SYSTICK_RESOLUTION 1  //!< 1ms resolution
 
 /***********
 ** macros **
@@ -163,7 +163,8 @@ typedef struct __library_t {
 /*********************
 ** global variables **
 *********************/
-extern FILE *logfile;  //!< file for log output.
+extern FILE *logfile;       //!< file for log output.
+extern char *logfile_name;  //!< name of the logfile
 extern library_t *jsh_loaded_libraries;
 extern bool no_tcpip;  //!< command line option
 
@@ -173,5 +174,7 @@ extern bool no_tcpip;  //!< command line option
 extern bool jsh_register_library(const char *name, void *handle, void (*shutdown)(void));
 extern bool jsh_check_library(const char *name);
 extern int jsh_do_file(js_State *J, const char *fname);
+extern void jsh_logflush(void);
+extern bool jsh_file_exists(const char *filename);
 
 #endif  // __JSH_H__

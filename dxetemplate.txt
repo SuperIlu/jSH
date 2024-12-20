@@ -24,11 +24,13 @@
 #include <unistd.h>
 #include <unistd.h>
 #include <zlib.h>
+#include <locale.h>
 
 #include "zipfile.h"
 #include "intarray.h"
 #include "bytearray.h"
 #include "util.h"
+#include "gccint8.h"
 
 // symbols without include file from libgcc
 extern BOOL _watt_do_exit;
@@ -63,15 +65,23 @@ rename
 rmdir
 snprintf
 sprintf
+vsprintf
 stat
 strerror
 unlink
+remove
+setlocale
+_truename
 
 // time
 clock
 localtime
+localtime_r
 sleep
+usleep
 strftime
+pctimer_get_ticks
+pctimer_sleep
 
 // copy/move/strings
 atoi
@@ -96,6 +106,7 @@ raise
 realloc
 realloc
 signal
+sigaction
 
 // lowlevel
 __dj_ctype_flags
@@ -106,6 +117,9 @@ __dpmi_get_protected_mode_interrupt_vector
 __dpmi_int
 __dpmi_int
 __dpmi_set_protected_mode_interrupt_vector
+_go32_dpmi_allocate_real_mode_callback_retf
+__dpmi_simulate_real_mode_interrupt
+_go32_dpmi_allocate_dos_memory
 _farpeekb
 _farpeekw
 _get_dos_version
@@ -194,6 +208,7 @@ IntArray_fromStruct
 IntArray_push
 
 // watt32
+_w32_inet_pton
 _watt_do_exit
 accept
 access
@@ -264,3 +279,8 @@ ByteArray_fromStruct
 alarm
 ByteArray_destroy
 ByteArray_push
+ByteArray_fromBytes
+jsh_file_exists
+
+// math
+exp

@@ -44,7 +44,7 @@ typedef struct {
 *********************/
 extern void init_intarray(js_State *J);
 
-extern void IntArray_fromBytes(js_State *J, uint8_t *data, uint32_t size);
+extern void IntArray_fromBytes(js_State *J, const uint8_t *data, uint32_t size);
 extern int_array_t *IntArray_create(void);
 extern int IntArray_push(int_array_t *ia, IA_TYPE val);
 extern void IntArray_destroy(int_array_t *ia);

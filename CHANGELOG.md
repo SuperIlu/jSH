@@ -1,6 +1,14 @@
-**V0.95 **
+**V0.96**
+* updated curl, mbedTLS, neural, SQLite, Watt32 to the current version of DOjS
+* unified similar modules with DOjS for easier updates
+* unified Makefiles
+* updated documentation (beware of breaking changes)!
+* ported IPX from DOjS to jSH
+* ported PdfGen from DOjS to jSH
+
+**V0.95**
 * Added `GetEnv()`
-* Switched over to curl 8.0.1 with mbedTLS 2.28.3
+* Switched over to curl 8.1.0 with mbedTLS 2.28.3
 
 **V0.92 updates, init?**
 * updated openssl, curl and kuba-zip

@@ -122,7 +122,12 @@ static void f_AsciiCharDef(js_State *J) {
 
 static void f_EnableScrolling(js_State *J) { _wscroll = js_toboolean(J, 1); }
 
-static void f_GetXKey(js_State *J) { js_pushnumber(J, getxkey()); }
+static void f_GetXKey(js_State *J) {
+    while (!kbhit()) {
+        ;
+    }
+    js_pushnumber(J, getxkey());
+}
 
 static void f_KbHit(js_State *J) { js_pushboolean(J, kbhit()); }
 
@@ -135,6 +140,8 @@ static void f_KbHit(js_State *J) { js_pushboolean(J, kbhit()); }
  * @param J VM state.
  */
 void init_conio(js_State *J) {
+    DEBUGF("%s\n", __PRETTY_FUNCTION__);
+
     // colors
     PROPDEF_N(J, BLACK, "BLACK");
     PROPDEF_N(J, BLUE, "BLUE");
@@ -204,6 +211,8 @@ void init_conio(js_State *J) {
     NFUNCDEF(J, EnableScrolling, 1);
     NFUNCDEF(J, GetXKey, 0);
     NFUNCDEF(J, KbHit, 0);
+
+    DEBUGF("%s DONE\n", __PRETTY_FUNCTION__);
 }
 
 /*

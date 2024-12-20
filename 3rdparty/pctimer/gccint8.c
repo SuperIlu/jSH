@@ -36,6 +36,8 @@ int counter_reset;
 unsigned long int ticks_8h = 0;
 unsigned char flag_pm_termination = TRUE_FAILURE;
 
+static void (*hook_function)();
+
 void pctimer_init(unsigned int Hz) {
     unsigned int pit0_set, pit0_value;
 
@@ -45,6 +47,7 @@ void pctimer_init(unsigned int Hz) {
         lock_rm_new8h();
         lock_pm_new8h();
 
+        _go32_dpmi_lock_data(&hook_function, sizeof(hook_function));
         _go32_dpmi_lock_data(&ticks_8h, sizeof(ticks_8h));
         _go32_dpmi_lock_data(&counter_8h, sizeof(counter_8h));
         _go32_dpmi_lock_data(&counter_8h, sizeof(counter_reset));
@@ -146,6 +149,10 @@ void pm_new8h(void) {
 
     flag_pm_termination = TRUE_FAILURE;
 
+    if (hook_function) {
+        hook_function();
+    }
+
     if (counter_8h == counter_reset) {
         flag_pm_termination = CHAIN_TERMINATION;
         counter_8h = 0;
@@ -232,3 +239,5 @@ char *get_cmostime(void) {
 
     return (buff);
 }
+
+void pctimer_set_hook(void (*proc)()) { hook_function = proc; }

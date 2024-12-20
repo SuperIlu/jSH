@@ -366,7 +366,7 @@ void init_intarray(js_State *J) {
  * @param data the data (will be copied).
  * @param size size of the data.
  */
-void IntArray_fromBytes(js_State *J, uint8_t *data, uint32_t size) {
+void IntArray_fromBytes(js_State *J, const uint8_t *data, uint32_t size) {
     int_array_t *ia = calloc(sizeof(int_array_t), 1);
     if (!ia) {
         JS_ENOMEM(J);

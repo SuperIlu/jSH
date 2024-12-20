@@ -21,7 +21,7 @@ SOFTWARE.
 */
 Println("This is jSH: Hello World!");
 
-Println("arguments=" + JSON.stringify(args));
+Println("arguments=" + JSON.stringify(ARGS));
 
 Println("Key_ESC=" + K_Escape);
 
