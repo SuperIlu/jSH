@@ -475,10 +475,6 @@ static void Zip_WriteInts(js_State *J) {
     }
 }
 
-
-
-
-
 /***********************
 ** exported functions **
 ***********************/

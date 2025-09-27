@@ -19,12 +19,16 @@
 #include <sys/movedata.h>
 #include <sys/stat.h>
 #include <tcp.h>
+#include <poll.h>
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
 #include <unistd.h>
 #include <zlib.h>
+#include <setjmp.h>
 #include <locale.h>
+#include <fnmatch.h>
+#include <pwd.h>
 
 #include "zipfile.h"
 #include "intarray.h"
@@ -42,6 +46,13 @@ extern long __divmoddi4 (long A, long B, long *C);
 extern unsigned long __umoddi3 (unsigned long A, unsigned long B);
 
 // stdio/files
+fnmatch
+if_nametoindex
+llseek
+pipe
+fseeko
+getpwuid
+realpath
 closedir
 fclose
 fflush
@@ -68,6 +79,7 @@ sprintf
 vsprintf
 stat
 strerror
+strerror_r
 unlink
 remove
 setlocale
@@ -75,6 +87,7 @@ _truename
 
 // time
 clock
+gmtime_r
 localtime
 localtime_r
 sleep
@@ -106,6 +119,8 @@ raise
 realloc
 realloc
 signal
+siglongjmp
+sigsetjmp
 sigaction
 
 // lowlevel
@@ -210,12 +225,16 @@ IntArray_push
 // watt32
 _w32_inet_pton
 _watt_do_exit
+_w32_inet_ntop
+gethostname
+poll
 accept
 access
 basename
 bind
 chmod
 clearerr
+closesocket
 connect
 gai_strerror
 getaddrinfo

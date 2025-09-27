@@ -1,3 +1,9 @@
+**V0.98**
+* updated mbedTLS and curl
+
+**V0.97**
+* updated zip to 0.3.3
+
 **V0.96**
 * updated curl, mbedTLS, neural, SQLite, Watt32 to the current version of DOjS
 * unified similar modules with DOjS for easier updates

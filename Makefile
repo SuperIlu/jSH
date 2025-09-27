@@ -7,13 +7,14 @@
 THIRDPARTY	= 3rdparty/
 MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
-KUBAZIP		= $(THIRDPARTY)/zip-0.2.3
+KUBAZIP		= $(THIRDPARTY)/zip-0.3.3
 ZLIB		= $(THIRDPARTY)/zlib-1.3.1
 PCTIMER     = $(THIRDPARTY)/pctimer
 INI			= $(THIRDPARTY)/ini-20220806/src
 WATT32		= $(THIRDPARTY)/Watt-32
-CURL		= $(THIRDPARTY)/curl-8.11.0
-MBEDTLS		= $(THIRDPARTY)/mbedtls-3.6.2
+CURL_SRC	= $(THIRDPARTY)/curl-8.16.0
+CURL_BIN	= $(THIRDPARTY)/curl-djgpp
+MBEDTLS		= $(THIRDPARTY)/mbedtls-3.6.4
 
 JSDOC_TEMPLATES ?= $(shell npm root)/better-docs $(shell npm root -g)/better-docs
 
@@ -22,10 +23,10 @@ LIB_MUJS	= $(MUJS)/build/release/libmujs.a
 LIB_WATT	= $(WATT32)/lib/libwatt.a
 LIB_Z		= $(ZLIB)/libz.a
 LIB_MBEDTLS = $(MBEDTLS)/library/libmbedtls.a
-LIB_CURL	= $(CURL)/libcurl.a
+LIB_CURL	= $(CURL_BIN)/lib/libcurl.a
 
 # compiler
-CDEF		= -DGC_BEFORE_MALLOC #-DDEBUG_ENABLED #-DMEMDEBUG 
+CDEF		= -DMBEDTLS_CONFIG_FILE='<$(realpath $(THIRDPARTY)/dojs_mbedtls_config.h)>' -DGC_BEFORE_MALLOC #-DDEBUG_ENABLED #-DMEMDEBUG 
 CFLAGS		= -MMD -Wall -std=gnu99 -Os -march=i386 -mtune=i586 -ffast-math $(INCLUDES) -fgnu89-inline -Wmissing-prototypes $(CDEF)
 INCLUDES	= \
 	-I$(realpath $(MUJS)) \
@@ -35,7 +36,7 @@ INCLUDES	= \
 	-I$(realpath $(ZLIB)) \
 	-I$(realpath $(MBEDTLS))/include \
 	-I$(realpath $(MBEDTLS))/library \
-	-I$(realpath $(CURL))/include \
+	-I$(realpath $(CURL_SRC))/include \
 	-I$(realpath $(PCTIMER)) \
 	-I$(realpath $(INI))/ \
 	-I$(realpath ./src/)
@@ -121,8 +122,8 @@ $(LIB_MUJS):
 	$(MAKE) -C $(MUJS) build/release/libmujs.a
 
 libcurl: $(LIB_CURL)
-$(LIB_CURL): $(LIB_MBEDTLS) $(LIB_Z)
-	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.mk CFG=-zlib-mbedtls-watt TRIPLET=i586-pc-msdosdjgpp WATT_ROOT=$(WATT32)
+$(LIB_CURL): $(LIB_MBEDTLS) $(LIB_Z) $(LIB_WATT)
+	(cd $(CURL_SRC) && $(SHPRG) ./cmake-djgpp.sh)
 
 libmbedtls: $(LIB_MBEDTLS)
 $(LIB_MBEDTLS):
@@ -210,8 +211,7 @@ mbedtlsclean:
 	$(MAKE) -C $(MBEDTLS) -f Makefile clean
 
 curlclean:
-	$(MAKE) $(MPARA) -C $(CURL)/lib -f Makefile.mk CFG=-zlib-mbedtls-watt TRIPLET=i586-pc-msdosdjgpp WATT_ROOT=$(WATT32) clean
-	$(RMPRG) -f $(CURL)/lib/libcurl.a
+	$(RMPRG) -rf $(CURL_BIN)
 
 wattclean:
 	$(MAKE) -C $(WATT32)/src -f djgpp.mak clean

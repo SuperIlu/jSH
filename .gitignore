@@ -25,6 +25,7 @@ TEST.DB
 W32DHCP.TMP
 CACERT.PEM
 3rdparty/curl-7.80.0/lib/curl_config.h
+3rdparty/curl-djgpp
 3rdparty/openssl-1.1.1n/libcrypto.pc
 3rdparty/openssl-1.1.1n/libssl.pc
 3rdparty/openssl-1.1.1n/openssl.pc
