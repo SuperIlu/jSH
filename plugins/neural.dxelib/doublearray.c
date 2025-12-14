@@ -23,6 +23,7 @@ SOFTWARE.
 #include "doublearray.h"
 
 #include <mujs.h>
+#include <stdlib.h>
 
 #include "zipfile.h"
 

@@ -29,7 +29,7 @@ SOFTWARE.
 /************
 ** defines **
 ************/
-//#define JSINC_FUNC BOOT_DIR "func.js"  //!< boot script for grx subsystem
+// #define JSINC_FUNC BOOT_DIR "func.js"  //!< boot script for grx subsystem
 
 /***********************
 ** exported functions **

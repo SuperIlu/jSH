@@ -51,9 +51,6 @@ LIGHTGREEN = 0;
 /**
 * @property {number} color for TextColor() and TextBackground().
 */
-/**
-* @property {number} color for TextColor() and TextBackground().
-*/
 LIGHTCYAN = 0;
 /**
 * @property {number} color for TextColor() and TextBackground().

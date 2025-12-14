@@ -1,3 +1,9 @@
+**V0.99**
+* fixed `Screen` object.
+* fixed `CGets()`.
+* added missing include
+* updated zip, mbedTLS and curl
+
 **V0.98**
 * updated mbedTLS and curl
 

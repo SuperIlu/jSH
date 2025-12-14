@@ -136,7 +136,7 @@ static void Screen_TextColor(js_State *J) {
         return;
     }
 
-    int color = js_toint16(J, 1);
+    int color = js_touint16(J, 1);
     s->ScreenAttrib = (s->ScreenAttrib & 0xF0) | (color & 0xF);
 }
 
@@ -173,8 +173,8 @@ static void Screen_Put(js_State *J) {
         return;
     }
 
-    int x = js_touint16(J, 1);
-    int y = js_touint16(J, 2);
+    unsigned int x = js_touint16(J, 1);
+    unsigned int y = js_touint16(J, 2);
 
     if (x == 0 || y == 0) {
         js_error(J, "Coordinates are 1-based");
@@ -184,11 +184,17 @@ static void Screen_Put(js_State *J) {
     x--;
     y--;
 
+    if((x >= s->width) || (y >= s->height)) {
+        js_error(J, "Coordinates out of bounds: %dx%d!", x+1, y+1);
+        return;
+    }
+
     const char *str = js_tostring(J, 3);
     uint16_t _attr = (s->ScreenAttrib << 8) & 0xFF00;
     int pos = x + s->width * y;
     while (pos < s->len && *str) {
-        s->data[pos] = *str | _attr;
+        uint16_t ch = *str & 0xFF;
+        s->data[pos] = ch | _attr;
         pos++;
         str++;
     }
@@ -201,14 +207,20 @@ static void Screen_Put0(js_State *J) {
         return;
     }
 
-    int x = js_touint16(J, 1);
-    int y = js_touint16(J, 2);
+    unsigned int x = js_touint16(J, 1);
+    unsigned int y = js_touint16(J, 2);
+
+    if((x >= s->width) || (y >= s->height)) {
+        js_error(J, "Coordinates out of bounds: %dx%d!", x, y);
+        return;
+    }
 
     const char *str = js_tostring(J, 3);
     uint16_t _attr = (s->ScreenAttrib << 8) & 0xFF00;
     int pos = x + s->width * y;
     while (pos < s->len && *str) {
-        s->data[pos] = *str | _attr;
+        uint16_t ch = *str & 0xFF;
+        s->data[pos] = ch | _attr;
         pos++;
         str++;
     }

@@ -78,8 +78,8 @@ static void f_DeleteLine(js_State *J) { delline(); }
 static void f_InsertLine(js_State *J) { insline(); }
 
 static void f_CGets(js_State *J) {
-    char buff[260];
-    buff[0] = 255;
+    char buff[83];
+    buff[0] = 81;
     char *str = cgets(buff);
     str[(unsigned int)buff[1]] = 0;
     js_pushstring(J, str);

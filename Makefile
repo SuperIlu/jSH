@@ -7,14 +7,14 @@
 THIRDPARTY	= 3rdparty/
 MUJS		= $(THIRDPARTY)/mujs-1.0.5
 DZCOMMDIR	= $(THIRDPARTY)/dzcomm
-KUBAZIP		= $(THIRDPARTY)/zip-0.3.3
+KUBAZIP		= $(THIRDPARTY)/zip-0.3.5
 ZLIB		= $(THIRDPARTY)/zlib-1.3.1
 PCTIMER     = $(THIRDPARTY)/pctimer
 INI			= $(THIRDPARTY)/ini-20220806/src
 WATT32		= $(THIRDPARTY)/Watt-32
-CURL_SRC	= $(THIRDPARTY)/curl-8.16.0
+CURL_SRC	= $(THIRDPARTY)/curl-8.17.0
 CURL_BIN	= $(THIRDPARTY)/curl-djgpp
-MBEDTLS		= $(THIRDPARTY)/mbedtls-3.6.4
+MBEDTLS		= $(THIRDPARTY)/mbedtls-3.6.5
 
 JSDOC_TEMPLATES ?= $(shell npm root)/better-docs $(shell npm root -g)/better-docs
 
